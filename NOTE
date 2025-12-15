@@ -1,39 +1,147 @@
-一、编译
-1. 编译 boost
-  * cd programming/bigworld/third_party/mongodb/boost
-  * 按照 README.BigWorld 的指示，编译 boost
+一、编译 server
 
-2. 编译 mongo_cxx_client
-  * cd programming/bigworld/third_party/mongodb/mongo_cxx_driver
-  * 按照 README.BigWorld 的指示，解压文件夹并进入到 mongo_cxx_driver 目录下
-  * 修改 SConstruct
-    * 580行修改为：
-      env["LIBPATH"] = [Dir(get_option( "libpath" )).srcnode().path]
-    * 1460行修改为：
-      # 如果使用较新的 c++ 标准
-      env.Append(CCFLAGS=[
-        "-Wno-error=packed-not-aligned",
-        "-Wno-error=array-compare", // 仅高版本的 gcc 需要启动该选项
-        "-Wno-error=dangling-else",
-        "-Wno-error=misleading-indentation",
-        "-Wno-error=nonnull-compare",
-        "-Wno-error=maybe-uninitialized",
-        "-Wno-error=class-memaccess",
-        "-Wno-error=format-truncation="
-      ])
-      env.Append(CCFLAGS=["-isystem", "../../boost/build/include/"])
-      env = doConfigure( env )
-  * 修改cpp文件 (如果使用较新的 c++ 标准)
-    * 修复 src/mongo/s/shard.h:282 的指针比较问题
-    * 修复 src/mongo/dbtests/jsobjtests.cpp:1932 的指针比较问题
-  * 安装 scons (需要 python2.7 的依赖)
-    * python2 -m pip install --user scons
-    * 如果出现 scons 报错问题，需要导入这两个变量
-      * export LC_ALL=en_US.utf-8
-      * export LANG=en_US.utf-8
-  * 编译: scons --full --use-system-boost --prefix=$PWD/../build --libpath=../../boost/build/lib
+server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 vmware 虚拟机：
 
-3. 编译项目
+早期我使用的是 docker 来搭建编译环境的。但是在实际运行时，客户端在连接服务器后，服务器会下发个别服务的地址，这些地址中
+包含了容器内部使用的 IP 地址。由于安全原因，在默认情况下这些地址是无法暴露给除宿主机以外的节点使用的（可以实现，但是非
+常麻烦）。因此还是建议使用 vmware 来完成。
+
+1. centos7 环境搭建:
+  * 下载 centos7 镜像: https://mirrors.aliyun.com/centos/7/isos/x86_64/
+  * 在 vmware 中正常流程安装下载的镜像，有几个要点注意：
+    * 在创建虚拟机时先不选择镜像；创建完成后再去选择一个镜像；
+    * 选择桥接网络；NAT 模式虚拟出一个独立的环境，要经过许多配置挺麻烦；
+    * 选择系统最小安装(mini)，勾选必要的依赖软件可以省去一下麻烦；
+  * 进入系统，完成网络配置: 
+    * cd /etc/sysconfig/network-scripts/
+    * vi ifcfg-ens160；修改网络属性，注意，该文件名可能会不一样
+      * BOOTPROTO=static
+      * ONBOOT=yes
+      * GATEWAY=<与宿主机保持一致>
+      * NETMASK=<与宿主机保持一致>
+      * IPADDR=<此处是静态分配的IP地址，建议使用 arp -a 查看未被占用的地址>
+      * DNS1=8.8.8.8
+      * DNS2=114.114.114.114
+    * systemctl start network
+    * systemctl status network
+    * chkconfig network on
+  * 依照这篇教程配置阿里云的源: https://zhuanlan.zhihu.com/p/700216782
+  * 安装软件:
+    yum -y groupinstall "Development Tools" && \
+      yum install -y redhat-lsb-core && \
+      yum install -y openssh-server net-tools socat && \
+      yum install -y vim wget bzip2 mc which dos2unix mysql initscripts && \
+      yum install -y python2 python2-pip && \
+      pip install --upgrade "pip < 21.0" && \
+      pip install scons setuptools && \
+      yum install -y python3 python3-pip && \
+      pip3 install --upgrade pip && \
+      python3 -m pip install compiledb && \
+      echo -e "export LC_ALL=en_US.utf-8\nexport LANG=en_US.utf-8"  >> ~/.bashrc && \
+      yum install -y mariadb-devel python2-devel sqlite-devel readline-devel gdbm-devel bzip2-devel ncurses-devel binutils-devel
+  * 关闭防火墙:
+    systemctl disable firewalld
+    systemctl status firewalld
+    systemctl stop firewalld
+  * 关闭 windows 防火墙
+  * 设置代理:
+    * 通用代理:
+      cat << 'EOF' >> ~/.bashrc
+      export $HTTP_PROXY=http://192.168.31.177:7890
+      export $HTTPS_PROXY=http://192.168.31.177:7890
+      export $http_proxy=http://192.168.31.177:7890
+      export $https_proxy=http://192.168.31.177:7890
+      export $http_proxy=http://192.168.31.177:7890
+      export $all_proxy=socks5://192.168.31.177:7890
+      export $ALL_PROXY=socks5://192.168.31.177:7890
+      EOF
+    * ssh 代理:
+      mkdir ~/.ssh
+      cat << 'EOF' >> ~/.ssh/config
+      Host github.com
+        User git
+        Port 22
+        Hostname github.com
+        ProxyCommand socat - PROXY:192.168.31.177:%h:%p,proxyport=7890
+      EOF
+    * git 代理:
+      git config --global https.proxy http://192.168.31.177:7890
+      git config --global http.proxy http://192.168.31.177:7890
+    * 设置 socket 内核参数
+      cat << 'EOF' >> sysctl.conf
+      
+      # Core socket buffer
+      net.core.rmem_max = 16777216
+      net.core.rmem_default = 262144
+      net.core.wmem_max = 16777216
+      net.core.wmem_default = 262144
+      
+      # TCP buffers
+      net.ipv4.tcp_rmem = 4096 87380 16777216
+      net.ipv4.tcp_wmem = 4096 65536 16777216
+      
+      # UDP buffers
+      net.ipv4.udp_mem = 65536 131072 262144
+      net.ipv4.udp_rmem_min = 8192
+      net.ipv4.udp_wmem_min = 8192
+      
+      # Queue & backlog
+      net.core.netdev_max_backlog = 5000
+      net.core.somaxconn = 8192
+      net.ipv4.tcp_max_syn_backlog = 8192
+      
+      # TCP connection behavior
+      net.ipv4.ip_local_port_range = 1024 65535
+      net.ipv4.tcp_fin_timeout = 30
+      net.ipv4.tcp_tw_reuse = 1
+      
+      # TCP performance
+      net.ipv4.tcp_syncookies = 1
+      net.ipv4.tcp_window_scaling = 1
+      net.ipv4.tcp_sack = 1
+      net.ipv4.tcp_timestamps = 1
+      
+      # File descriptor (kernel)
+      fs.file-max = 524288
+      EOF
+
+2. 编译 monogo
+  * 编译 boost
+    * cd programming/bigworld/third_party/mongodb/boost
+    * 按照 README.BigWorld 的指示编译
+  * 编译 mongo_cxx_client
+    * cd programming/bigworld/third_party/mongodb/mongo_cxx_driver
+    * 按照 README.BigWorld 的指示编译
+    * 修改 mongo_cxx_driver/SConstruct
+      * 580行修改为：
+        env["LIBPATH"] = [Dir(get_option( "libpath" )).srcnode().path]
+      * 1460行修改为：
+        # 如果使用较新的 c++ 标准
+        env.Append(CCFLAGS=[
+          "-Wno-error=packed-not-aligned",
+          "-Wno-error=array-compare", # 仅高版本的 gcc 需要启动该选项
+          "-Wno-error=dangling-else",
+          "-Wno-error=misleading-indentation",
+          "-Wno-error=nonnull-compare",
+          "-Wno-error=maybe-uninitialized",
+          "-Wno-error=class-memaccess",
+          "-Wno-error=format-truncation="
+        ])
+        env.Append(CCFLAGS=["-isystem", "../../boost/build/include/"])
+        env = doConfigure( env )
+    * 如果使用较新的 c++ 标准（不推荐），则修改 cpp 文件
+      * 修复 src/mongo/s/shard.h:282 的指针比较问题
+      * 修复 src/mongo/dbtests/jsobjtests.cpp:1932 的指针比较问题
+    * 安装 scons
+      * python2 -m pip install --user scons
+      * scons --version 检测是否安装完后；如果出现报错问题，需要导入这两个变量
+        * export LC_ALL=en_US.utf-8
+        * export LANG=en_US.utf-8
+        * echo -e "export LC_ALL=en_US.utf-8\nexport LANG=en_US.utf-8"  >> ~/.bashrc
+    * 编译: 
+      scons --full --use-system-boost --prefix=$PWD/../build --libpath=../../boost/build/lib
+
+3. 编译服务端
   * 修改文件可执行权限
     * chmod +x bigworld/third_party/openssl/Configure
     * chmod +x bigworld/build/make/platform_info.py
@@ -49,16 +157,6 @@
     * chmod +x bigworld/build/make/test_mysql.sh
     * chmod +x bigworld/build/make/test_sdl.sh
     * chmod +X bigworld/build/make/test_prlimit.sh
-
-  * 由于这是老项目，更推荐使用 centos7 平台来达到无缝体验
-    * 制作镜像：
-      * docker buildx build --no-cache -t centos:7-fixed ./
-    * 进入容器：
-      * docker run -it --mount type=bind,source=$(pwd),target=/src/BigWorld-Engine -w /src/BigWorld-Engine centos:7-f
-ixed /bin/bash
-    * 构造镜像时已经包含了所有依赖，只需要完成先导 monogo 的编译即可开始编译项目：
-      * make -C programming/
-  
   * 如果有特殊需求，比如说我需要依赖本机环境（Ubuntu24.04）来生成编译数据库
     * 安装依赖
       * sudo apt install libnsl-dev
@@ -100,5 +198,85 @@ ixed /bin/bash
     * 打补丁包：
       * git apply --check ./UBUNTU_BUILD.patch 
       * git apply ./UBUNTU_BUILD.patch
-    * 编译项目：
-      * make -C programming/
+  * 编译项目：
+    * make [MF_CONFIG=debug] -C programming/
+
+4. 编译 client
+  * 安装 Visual Studio 2022 community
+  * 打开 Visual Studio Installer 安装 C++ 编译环境
+    * 选中 Individual components；安装 C++ Windows XP Support for VS 2017(v141) tools[Deprecated]
+    * 选中 Workloads；安装 Desktop development witch C++
+  * 安装 .NET Framework 3.5
+  * 安装 d3dx9：https://download.microsoft.com/download/A/E/7/AE743F1F-632B-4809-87A9-AA1BB3458E31/DXSDK_Jun10.exe
+  * 进入主目录；执行 programming/bigworld/build/bigworld_cmake.bat 生成 vs 工程文件
+    * 选中3: client
+    * 选中2: Visual Studio 2022 Win32
+  * 进入 programming/build_client_vc17_win32；通过 sln 文件进入 visual studio
+  * 解决方案中选择 Executables/bwclient 为默认启动程序
+  * 选择 Consumer_Release/Debug 编译模式
+  * 可能需要修复的问题：
+    * 需要先选择 Debug 模式正常启动，此时会生成一些必要的资源文件；
+    * 然后在退出游戏，清理构建，选择 Consumer_Release 模式启动游戏
+
+5. 运行服务端
+  * mysql
+    * CREATE DATABASE IF NOT EXISTS bigworld DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_general_ci;
+    * create user 'bigworld'@'localhost' identified by 'bigworld';
+    * grant all privileges on *.* to 'bigworld'@'localhost';
+    * create user 'bigworld'@'%' identified by 'bigworld';
+    * grant all privileges on *.* to 'bigworld'@'%';
+    * flush privileges;
+  * 修改服务端监听 mysql 的地址
+    * nvim game/res/bigworld/server/production_defaults.xml
+    * 找到 <mysql> 条目；更改IP与端口号
+  * 创建一个额外目录存放服务端进程文件（不清楚具体原因，这个目录不会被使用，只是占位？）
+    * mkdir -p ~/mf/bigworld/bin/server/
+    * cp -R game/bin/server/el7[_debug]/server/* ~/mf/bigworld/bin/server/
+  * 创建 ~/.bwmachined.conf；要注意其中使用 <> 标注的目录需要根据实际情况修改
+      cat << 'EOF' >> ~/.bwmachined.conf
+      <HOME>/mf/bigworld;<BIGWORD_SOURCE>/game/res/bigworld:<BIGWORD_SOURCE>/game/res/fantasydemo
+      
+      [Components]
+      cellApp
+      baseApp
+      serviceApp
+      dbApp
+      cellAppMgr
+      baseAppMgr
+      dbAppMgr
+      loginApp
+      bots
+      
+      [Groups]
+      dev
+      
+      [TimingMethod]
+      gettime
+      
+      #[architecture]
+      #32
+      
+      #[InternalInterface]
+      #eth0
+      
+      #[MaxPacketDelay]
+      #100
+      EOF
+  * 安装 bwmachined
+    * cp game/bin/server/el7[_debug]/tools/bwmachined2 game/tools/bigworld/server/bin/Hybrid64
+    * cd game/tools/bigworld/server/install
+    * ./bwmachined2.sh install
+    * systemctl status bwmachined2
+  * 运行
+    * cd game
+    * ./start-all-server.sh
+
+6. 运行客户端
+  * 修改 loginapp 的地址
+    * game/res/fantasydemo/scripts_config.xml
+  * 添加运行参数
+    * 选中 Executables/bwclient 属性
+    * 选中 Debugging
+    * 添加命令参数:
+      --res C:\Users\NGPONG\Desktop\BigWorld-Engine-14.4.1-Full\game\res\fantasydemo;C:\Users\NGPONG\Desktop\BigWorld-Engine-14.4.1-Full\game\res\bigworld
+  * 在 visual studio 中运行

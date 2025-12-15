@@ -109,9 +109,10 @@ do_redhat_stop()
 case "$1" in
   start)
 	echo -n "Starting $BASE: "
-	(echo ${CORE_PATH}core.%e.%h.%p > /proc/sys/kernel/core_pattern) 2> /dev/null ||
-		echo "INFO: Unable to update /proc/sys/kernel/core_pattern"
-	ulimit -c unlimited
+	# 如果是在容器环境中运行，无法修改内核参数（这里修改的是 coredump 转储的位置）
+	# (echo ${CORE_PATH}core.%e.%h.%p > /proc/sys/kernel/core_pattern) 2> /dev/null ||
+	# 	echo "INFO: Unable to update /proc/sys/kernel/core_pattern"
+	# ulimit -c unlimited
 	if [ -f /etc/debian_version ]; then
 		do_debian_start
 	else

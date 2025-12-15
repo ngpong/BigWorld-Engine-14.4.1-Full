@@ -11,7 +11,7 @@ RUN yum -y groupinstall "Development Tools" && \
   yum install -y epel-release && \
   yum install -y epel-release && \
   yum install -y redhat-lsb-core && \
-  yum install -y vim wget bzip2 mc which dos2unix && \
+  yum install -y vim wget bzip2 mc which dos2unix mysql initscripts && \
   yum install -y python2 python2-pip && \
   pip install --upgrade "pip < 21.0" && pip install scons && \
   yum install -y python3 python3-pip && \
