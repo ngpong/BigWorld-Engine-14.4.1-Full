@@ -1,0 +1,11 @@
+.cache/
+.git/
+3rdparty/
+.ccls-cache/
+build/
+.build/
+.vscode/
+dep/
+sql/
+contrib/
+programming/bigworld/third_party/

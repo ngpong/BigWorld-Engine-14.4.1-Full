@@ -1,6 +1,8 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
 PROJECT( moo )
 
+ADD_DEFINITIONS("-wd4477")
+
 INCLUDE( BWStandardProject )
 INCLUDE( BWStandardLibrary )
 

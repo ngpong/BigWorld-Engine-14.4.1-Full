@@ -1,0 +1,104 @@
+一、编译
+1. 编译 boost
+  * cd programming/bigworld/third_party/mongodb/boost
+  * 按照 README.BigWorld 的指示，编译 boost
+
+2. 编译 mongo_cxx_client
+  * cd programming/bigworld/third_party/mongodb/mongo_cxx_driver
+  * 按照 README.BigWorld 的指示，解压文件夹并进入到 mongo_cxx_driver 目录下
+  * 修改 SConstruct
+    * 580行修改为：
+      env["LIBPATH"] = [Dir(get_option( "libpath" )).srcnode().path]
+    * 1460行修改为：
+      # 如果使用较新的 c++ 标准
+      env.Append(CCFLAGS=[
+        "-Wno-error=packed-not-aligned",
+        "-Wno-error=array-compare", // 仅高版本的 gcc 需要启动该选项
+        "-Wno-error=dangling-else",
+        "-Wno-error=misleading-indentation",
+        "-Wno-error=nonnull-compare",
+        "-Wno-error=maybe-uninitialized",
+        "-Wno-error=class-memaccess",
+        "-Wno-error=format-truncation="
+      ])
+      env.Append(CCFLAGS=["-isystem", "../../boost/build/include/"])
+      env = doConfigure( env )
+  * 修改cpp文件 (如果使用较新的 c++ 标准)
+    * 修复 src/mongo/s/shard.h:282 的指针比较问题
+    * 修复 src/mongo/dbtests/jsobjtests.cpp:1932 的指针比较问题
+  * 安装 scons (需要 python2.7 的依赖)
+    * python2 -m pip install --user scons
+    * 如果出现 scons 报错问题，需要导入这两个变量
+      * export LC_ALL=en_US.utf-8
+      * export LANG=en_US.utf-8
+  * 编译: scons --full --use-system-boost --prefix=$PWD/../build --libpath=../../boost/build/lib
+
+3. 编译项目
+  * 修改文件可执行权限
+    * chmod +x bigworld/third_party/openssl/Configure
+    * chmod +x bigworld/build/make/platform_info.py
+    * chmod +x bigworld/build/make/discover_python.sh
+    * chmod +x bigworld/build/make/test_symlink.sh
+    * chmod +x bigworld/build/make/invoke_without_jobserver.py
+    * chmod +x bigworld/build/make/test_exec.sh
+    * chmod +x bigworld/third_party/python/configure
+    * chmod +x bigworld/third_party/python/Parser/asdl_c.py
+    * chmod +x bigworld/lib/build/build.py
+    * chmod +x bigworld/third_party/curl/configure
+    * chmod +x bigworld/third_party/python/Modules/_ctypes/libffi/configure
+    * chmod +x bigworld/build/make/test_mysql.sh
+    * chmod +x bigworld/build/make/test_sdl.sh
+    * chmod +X bigworld/build/make/test_prlimit.sh
+
+  * 由于这是老项目，更推荐使用 centos7 平台来达到无缝体验
+    * 制作镜像：
+      * docker buildx build --no-cache -t centos:7-fixed ./
+    * 进入容器：
+      * docker run -it --mount type=bind,source=$(pwd),target=/src/BigWorld-Engine -w /src/BigWorld-Engine centos:7-f
+ixed /bin/bash
+    * 构造镜像时已经包含了所有依赖，只需要完成先导 monogo 的编译即可开始编译项目：
+      * make -C programming/
+  
+  * 如果有特殊需求，比如说我需要依赖本机环境（Ubuntu24.04）来生成编译数据库
+    * 安装依赖
+      * sudo apt install libnsl-dev
+      * sudo apt install libssl-dev
+      * sudo apt install libgdbm-dev libgdm-compat-dev
+      * sudo apt install subversion
+      * sudo apt install libreadline-dev
+      * sudo apt install sqlite3 libsqlite3-dev
+      * sudo apt install libncurses-dev
+      * sudo apt install libbz2-dev
+      * sudo apt install python3-dev python3-setuptools
+    * 安装 python 2.7
+      * wget https://www.python.org/ftp/python/2.7.18/Python-2.7.18.tgz
+      * tar -zxvf ./Python-2.7.18.tgz
+      * cd ./Python-2.7.18/
+      * ./configure --enable-optimizations --enable-shared // 需要启动动态库的支持
+      * make -j16
+      * sudo make altinstall
+      * sudo ldconfig
+      * sudo update-alternatives --install /usr/local/bin/python python /usr/local/bin/python2.7 2 --slave /usr/local/bin/pip pip /usr/ local/bin/pip2.7
+    * 由于不支持 Ubuntu 编译，因此需要伪造一个 Redhat 版本信息
+      * echo "CentOS Linux release 7.9.2009 (Core)" >> /etc/redhat-release
+    * 切换 gcc 版本
+      * wget http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/g++-4.8_4.8.5-4ubuntu8_amd64.deb \
+          http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libstdc++-4.8-dev_4.8.5-4ubuntu8_amd64.deb \
+          http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/gcc-4.8-base_4.8.5-4ubuntu8_amd64.deb \
+          http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/gcc-4.8_4.8.5-4ubuntu8_amd64.deb \
+          http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libgcc-4.8-dev_4.8.5-4ubuntu8_amd64.deb \
+          http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/cpp-4.8_4.8.5-4ubuntu8_amd64.deb \
+          http://mirrors.kernel.org/ubuntu/pool/universe/g/gcc-4.8/libasan0_4.8.5-4ubuntu8_amd64.deb
+      * sudo apt install gcc-4.8_4.8.5-4ubuntu8_amd64.deb \
+          gcc-4.8-base_4.8.5-4ubuntu8_amd64.deb \
+          libstdc++-4.8-dev_4.8.5-4ubuntu8_amd64.deb \
+          cpp-4.8_4.8.5-4ubuntu8_amd64.deb \
+          libgcc-4.8-dev_4.8.5-4ubuntu8_amd64.deb \
+          libasan0_4.8.5-4ubuntu8_amd64.deb \
+          g++-4.8_4.8.5-4ubuntu8_amd64.deb
+      * sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.8 --slave /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-4.8 --slave /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-4.8 --slave /usr/bin/cpp cpp /usr/bin/cpp-4.8
+    * 打补丁包：
+      * git apply --check ./UBUNTU_BUILD.patch 
+      * git apply ./UBUNTU_BUILD.patch
+    * 编译项目：
+      * make -C programming/
