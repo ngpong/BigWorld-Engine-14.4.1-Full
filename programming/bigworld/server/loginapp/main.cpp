@@ -1,6 +1,6 @@
 #include "loginapp.hpp"
 #include "loginapp_config.hpp"
-#include "server/bwservice.hpp" 
+#include "server/bwservice.hpp"
 
 BW_USE_NAMESPACE
 

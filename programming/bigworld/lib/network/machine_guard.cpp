@@ -106,7 +106,7 @@ bool MGMPacket::write( MemoryOStream &os ) const
 	BW_GUARD;
 	os << flags_ << (s_buddy_ != BROADCAST ? s_buddy_ : buddy_);
 
-	for (unsigned i=0; i < messages_.size(); i++)
+  for (unsigned i=0; i < messages_.size(); i++)
 	{
 		int offset = os.size(); os.reserve( sizeof( uint16 ) );
 		messages_[i]->write( os );
@@ -246,8 +246,8 @@ MachineGuardMessage* MachineGuardMessage::create( BinaryIStream &is )
 		pMgm = new CreateWithArgsMessage(); break;
 
 	case MACHINE_PLATFORM_MESSAGE:
-		pMgm = new MachinePlatformMessage(); break;	
-		
+		pMgm = new MachinePlatformMessage(); break;
+
 	default:
 		pMgm = new UnknownMessage( Message( message ) ); break;
 	}
@@ -1238,7 +1238,7 @@ void UserMessage::readImpl( BinaryIStream &is )
 	MachineGuardMessage::readImpl( is );
 	is >> param_ >> uid_ >> username_ >> fullname_ >>
 		home_ >> mfroot_ >> bwrespath_ >> coredumps_;
-	
+
 	versionString_.clear();
 
 	if ((param_ & PARAM_GET_VERSION) && (is.remainingLength() > 0))
@@ -1400,7 +1400,7 @@ const char *PidMessage::c_str() const
 
 
 // -----------------------------------------------------------------------------
-// Section: MachinePlatformMessage 
+// Section: MachinePlatformMessage
 // -----------------------------------------------------------------------------
 
 MachinePlatformMessage::MachinePlatformMessage() :
@@ -1418,7 +1418,7 @@ void MachinePlatformMessage::writeImpl( BinaryOStream &os )
 {
 	BW_GUARD;
 	MachineGuardMessage::writeImpl( os );
-	os << platformInfo_; 
+	os << platformInfo_;
 }
 
 void MachinePlatformMessage::readImpl( BinaryIStream &is )

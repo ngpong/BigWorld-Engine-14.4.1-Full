@@ -164,7 +164,7 @@ bool extractFileDescriptor( PyObject * pFileOrSocket, int & fd )
  *	activity on the input file descriptor.
  */
 bool registerFileDescriptorCommon(
-		PyObject * pFileOrSocket, PyObject * pCallback, 
+		PyObject * pFileOrSocket, PyObject * pCallback,
 		const char * name, bool isRead )
 {
 	int fd = -1;
@@ -282,8 +282,72 @@ bool registerFileDescriptor( PyObjectPtr pFileOrSocket, PyObjectPtr pCallback,
 	return registerFileDescriptorCommon( pFileOrSocket.get(),
 			pCallback.get(), name.c_str(), true );
 }
+// static PyObject *_py_registerFileDescriptor(PyObject *, PyObject *args) {
+//   const Py_ssize_t argc = PyTuple_Size(args);
+//   if (argc < (3 - 1) || argc > (4 - 1)) {
+//     return Script::argCountError("registerFileDescriptor", (3 - 1), (4 - 1),
+//                                  "PyObjectPtr", "PyObjectPtr", "BW::string");
+//   }
+//   typedef PyObjectPtr arg1_type;
+//   PyObjectPtr arg1 = arg1_type();
+//   do {
+//     struct ERROR_Use_PyObjectPtr_arg_instead_of_PyObject_pointer {};
+//     typedef BW::BW_compile_time_check<
+//         (Script::IsValidArgType<PyObjectPtr>::isValid) != 0>
+//         TmplImpl;
+//     TmplImpl aTemp =
+//         TmplImpl(ERROR_Use_PyObjectPtr_arg_instead_of_PyObject_pointer());
+//     size_t x = sizeof(aTemp);
+//     x += 1;
+//   } while (0);
+//   if (Script::setData(PyTuple_GetItem(args, 1 - 1), arg1,
+//                       "() argument "
+//                       "1") != 0)
+//     return __null;
+//   typedef PyObjectPtr arg2_type;
+//   PyObjectPtr arg2 = arg2_type();
+//   do {
+//     struct ERROR_Use_PyObjectPtr_arg_instead_of_PyObject_pointer {};
+//     typedef BW::BW_compile_time_check<
+//         (Script::IsValidArgType<PyObjectPtr>::isValid) != 0>
+//         TmplImpl;
+//     TmplImpl aTemp =
+//         TmplImpl(ERROR_Use_PyObjectPtr_arg_instead_of_PyObject_pointer());
+//     size_t x = sizeof(aTemp);
+//     x += 1;
+//   } while (0);
+//   if (Script::setData(PyTuple_GetItem(args, 2 - 1), arg2,
+//                       "() argument "
+//                       "2") != 0)
+//     return __null;
+//   BW::string arg3 = "Unnamed Python";
+//   do {
+//     struct ERROR_Use_PyObjectPtr_arg_instead_of_PyObject_pointer {};
+//     typedef BW::BW_compile_time_check<
+//         (Script::IsValidArgType<BW::string>::isValid) != 0>
+//         TmplImpl;
+//     TmplImpl aTemp =
+//         TmplImpl(ERROR_Use_PyObjectPtr_arg_instead_of_PyObject_pointer());
+//     size_t x = sizeof(aTemp);
+//     x += 1;
+//   } while (0);
+//   if (argc >= 3 && Script::setData(PyTuple_GetItem(args, 3 - 1), arg3,
+//                                    "() argument "
+//                                    "3"
+//                                    " optionally") != 0)
+//     return __null;
+//   (void)0;
+//   if (registerFileDescriptor(arg1, arg2, arg3))
+//     return (((PyObject *)((&_Py_NoneStruct)))->ob_refcnt++), (&_Py_NoneStruct);
+//   return __null;
+// }
+// static PyModuleMethodLink s_link_py_registerFileDescriptor("BigWorld",
+//    "registerFileDescriptor",
+//    _py_registerFileDescriptor,
+//    __null);
+//
 PY_AUTO_MODULE_FUNCTION( RETOK, registerFileDescriptor,
-		ARG( PyObjectPtr, ARG( PyObjectPtr, 
+		ARG( PyObjectPtr, ARG( PyObjectPtr,
 			OPTARG( BW::string, "Unnamed Python", END ) ) ), BigWorld )
 
 
@@ -409,7 +473,7 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, address, END, BigWorld )
 /*~ function BigWorld.getNetworkInterfaces
  *	@components{ cell, base, db }
  *
- *  This function returns a tuple of network interfaces that are available 
+ *  This function returns a tuple of network interfaces that are available
  *  for the current host, optionally filtered by a CIDR netmask. Note that
  *  only IPv4 addresses are supported.
  *
@@ -419,18 +483,18 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, address, END, BigWorld )
  *	>>>	BigWorld.getNetworkInterfaces( '192.168.0.0/16' )
  *	(('192.168.1.1', 'eth0'),)
  *	@}
- *	
- *	Raises an OSError if the system ioctl call returns an error.   
+ *
+ *	Raises an OSError if the system ioctl call returns an error.
  *
  *  @param netmask  an (optional) netmask of form "a.b.c.d/#bits".
  *	@return         a tuple of tuples of form: (IP address, interface name),
  *                  or an empty tuple if there are no network interfaces.
  */
 /**
- *  This function returns a Python tuple of network interfaces for the 
+ *  This function returns a Python tuple of network interfaces for the
  *  current host, optionally filtered by a (CIDR) netmask of form "a.b.c.d/#bits".
  *  Note that only IPv4 addresses are supported.
- * 
+ *
  *  @see Endpoint::getInterfaces
  */
 static PyObject * getNetworkInterfaces( const BW::string & netmask )
@@ -461,8 +525,8 @@ static PyObject * getNetworkInterfaces( const BW::string & netmask )
         }
 
         PyObject * interfaceTuple = PyTuple_Pack( 2,
-            PyString_FromString( ipAddr ), 
-            PyString_FromString( it->second.c_str() ) 
+            PyString_FromString( ipAddr ),
+            PyString_FromString( it->second.c_str() )
         );
 
         PyTuple_SetItem( tupleOfinterfaceTuples, interfaceIndex++, interfaceTuple );
@@ -471,7 +535,7 @@ static PyObject * getNetworkInterfaces( const BW::string & netmask )
     return tupleOfinterfaceTuples;
 }
 
-PY_AUTO_MODULE_FUNCTION_WITH_DOC( RETOWN, 
+PY_AUTO_MODULE_FUNCTION_WITH_DOC( RETOWN,
     getNetworkInterfaces, OPTARG( BW::string, "", END),
     BigWorld, __DOC__getNetworkInterfaces )
 

@@ -40,7 +40,7 @@
 			<database> False </database> <!-- Type: Boolean -->
 		</autoConnect>
 	</pydevd>
-  
+
 	<networkCompression>
 		<internal> NONE </internal>
 		<external> NONE </external>
@@ -113,13 +113,13 @@
 	<isBadStateWithNoServiceApps> false </isBadStateWithNoServiceApps> <!-- Type: Boolean -->
 
 	<shouldUseChecksums> true </shouldUseChecksums> <!-- Type: Boolean -->
-	
+
 	<maxMgrRegisterStagger> 0.0 </maxMgrRegisterStagger> <!-- Type: Float -->
 
 	<shouldUseWebSockets> true </shouldUseWebSockets>
-    
+
 	<profilerJsonDumpDirectory></profilerJsonDumpDirectory> <!-- Type: String -->
-    
+
 	<profilerMaxThreads> 96 </profilerMaxThreads> <!-- Type: Integer -->
 
 	<balance>
@@ -155,13 +155,13 @@
 
 			<avgLoad> 0.85 <!-- Type: Float -->
 				<!-- <overloadTolerancePeriod> 5.0 </overloadTolerancePeriod> -->
-			</avgLoad> 
+			</avgLoad>
 
 			<maxLoad> 0.9 <!-- Type: Float -->
 				<!-- <overloadTolerancePeriod> 5.0 </overloadTolerancePeriod> -->
-			</maxLoad> 
+			</maxLoad>
 		</cellApp>
-		
+
 		<dbApp>
 			<maxLoad> 1.0 </maxLoad> <!-- Type: Float -->
 			<!-- <overloadTolerancePeriod> 5.0 </overloadTolerancePeriod> -->
@@ -225,7 +225,7 @@
 		<clientUpstreamLimits>
 			<warnMessagesPerSecond> 250 </warnMessagesPerSecond><!-- Type: Integer -->
 			<maxMessagesPerSecond> 500 </maxMessagesPerSecond><!-- Type: Integer -->
-			
+
 			<warnBytesPerSecond> 20480 </warnBytesPerSecond><!-- Type: Integer -->
 			<maxBytesPerSecond> 40960 </maxBytesPerSecond><!-- Type: Integer -->
 
@@ -395,7 +395,7 @@
 
 	<cellAppMgr>
 		<archivePeriod> 0 </archivePeriod> <!-- Type: Float -->
-		<shouldArchiveSpaceData> true </shouldArchiveSpaceData>  <!-- Type: Boolean --> 
+		<shouldArchiveSpaceData> true </shouldArchiveSpaceData>  <!-- Type: Boolean -->
 
 		<cellAppLoad>
 			<lowerBound> 0.02 </lowerBound> <!-- Type: Float -->

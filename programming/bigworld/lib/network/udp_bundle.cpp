@@ -138,7 +138,7 @@ void UDPBundle::clear( bool newBundle )
 	numReliableMessages_ = 0;
 	ack_ = SEQ_NULL;
 
-	// If we have a packet, it means we're being called from 
+	// If we have a packet, it means we're being called from
 	// UDPBundle( Packet * ) so we shouldn't touch it.
 	if (pFirstPacket_ == NULL)
 	{
@@ -226,7 +226,7 @@ int UDPBundle::numDataUnits() const
  * 	@param ie			The type of message to start.
  * 	@param reliable		True if the message should be reliable.
  */
-void UDPBundle::startMessage( const InterfaceElement & ie, 
+void UDPBundle::startMessage( const InterfaceElement & ie,
 		ReliableType reliable )
 {
 	// Piggybacks should only be added immediately before sending.
@@ -284,20 +284,20 @@ void UDPBundle::startRequest( const InterfaceElement & ie,
 	ReplyID * pReplyID = (ReplyID *)this->newMessage(
 		sizeof( ReplyID ) + sizeof( Packet::Offset ) );
 
-	Packet::Offset messageStart = 
+	Packet::Offset messageStart =
 		Packet::Offset( pCurrentPacket_->msgEndOffset() -
 			(ie.headerSize() +
-				sizeof( ReplyID ) + 
+				sizeof( ReplyID ) +
 				sizeof( Packet::Offset )));
-	Packet::Offset nextRequestLink = 
+	Packet::Offset nextRequestLink =
 			Packet::Offset( pCurrentPacket_->msgEndOffset() -
 				sizeof( Packet::Offset ) );
 
 	// Update the request tracking stuff on the current packet.
 	pCurrentPacket_->addRequest( messageStart, nextRequestLink );
 
-	// now make and add a reply order
-	ReplyOrder	ro = {handler, arg, timeout, pReplyID};
+  // now make and add a reply order
+  ReplyOrder	ro = {handler, arg, timeout, pReplyID};
 	replyOrders_.push_back(ro);
 		// it'd be nice to eliminate this unnecessary copy...
 
@@ -430,13 +430,13 @@ Packet * UDPBundle::preparePackets( UDPChannel * pChannel,
 			pChannel->writeFlags( pPacket );
 		}
 
-		if ((pChannel && pChannel->isExternal()) ||  
-			pPacket->hasFlags( Packet::FLAG_IS_RELIABLE ) || 
-			pPacket->hasFlags( Packet::FLAG_IS_FRAGMENT )) 
-		{ 
-			pPacket->reserveFooter( sizeof( SeqNum ) ); 
-			pPacket->enableFlags( Packet::FLAG_HAS_SEQUENCE_NUMBER ); 
-		} 
+		if ((pChannel && pChannel->isExternal()) ||
+			pPacket->hasFlags( Packet::FLAG_IS_RELIABLE ) ||
+			pPacket->hasFlags( Packet::FLAG_IS_FRAGMENT ))
+		{
+			pPacket->reserveFooter( sizeof( SeqNum ) );
+			pPacket->enableFlags( Packet::FLAG_HAS_SEQUENCE_NUMBER );
+		}
 
 		// At this point, pPacket->back() is positioned just after the message
 		// data, so we advance it to the end of where the footers end, then
@@ -548,7 +548,7 @@ Packet * UDPBundle::preparePackets( UDPChannel * pChannel,
 				(pChannel && pPacket->hasFlags( Packet::FLAG_IS_RELIABLE )) ?
 					pChannel->useNextSequenceID() :
 					seqNumAllocator.getNext();
-			
+
 			pPacket->packFooter( pPacket->seq() );
 
 			if (pPacket == pFirstPacket_)
@@ -593,7 +593,7 @@ Packet * UDPBundle::preparePackets( UDPChannel * pChannel,
 					this->reliableOrders( pPacket, roBeg, roEnd );
 				}
 
-				if (!pChannel->addResendTimer( pPacket->seq(), pPacket, 
+				if (!pChannel->addResendTimer( pPacket->seq(), pPacket,
 						roBeg, roEnd ))
 				{
 					if (pFirstOverflowPacket == NULL)
@@ -642,7 +642,7 @@ void UDPBundle::writeFlags( Packet * p ) const
 	if (ack_ != SEQ_NULL)
 	{
 		p->enableFlags( Packet::FLAG_HAS_ACKS );
-		p->reserveFooter( sizeof( Packet::AckCount ) + 
+		p->reserveFooter( sizeof( Packet::AckCount ) +
 						  sizeof( SeqNum ) );
 	}
 }
@@ -713,7 +713,7 @@ void UDPBundle::endMessage( bool isEarlyCall /* = false */ )
 	// nothing to do if no message yet
 	if (msgBeg_ == NULL)
 	{
-		MF_ASSERT( pCurrentPacket_->msgEndOffset() == Packet::HEADER_SIZE || 
+		MF_ASSERT( pCurrentPacket_->msgEndOffset() == Packet::HEADER_SIZE ||
 			hasEndedMsgEarly_ );
 		return;
 	}
@@ -840,7 +840,7 @@ void UDPBundle::reliableOrders( Packet * p,
 				roEnd != roFirst + roSize && roEnd->segBegin != NULL;
 				++roEnd) ; // scan
 
-			size_t reliableOrdersExtracted = (roEnd + 1) - 
+			size_t reliableOrdersExtracted = (roEnd + 1) -
 				&reliableOrders_.front();
 			MF_ASSERT( reliableOrdersExtracted <= INT_MAX );
 			reliableOrdersExtracted_ = ( int ) reliableOrdersExtracted;

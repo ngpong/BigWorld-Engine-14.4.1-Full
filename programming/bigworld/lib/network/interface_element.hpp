@@ -65,7 +65,7 @@ const char INVALID_MESSAGE = 3;
  *	This constant, when used as a return value for the stream size of a
  *	message, indicates that the message is invalid and should be discarded.
  */
-const int INVALID_STREAM_SIZE BW_UNUSED_ATTRIBUTE = 
+const int INVALID_STREAM_SIZE BW_UNUSED_ATTRIBUTE =
 	std::numeric_limits< int >::min();
 
 /**
@@ -91,8 +91,7 @@ public:
 			int8 lengthStyle = INVALID_MESSAGE, int lengthParam = 0,
 			InputMessageHandler * pHandler = NULL );
 
-   	void set( const char * name, MessageID id, int8 lengthStyle,
-		int lengthParam )
+  void set( const char * name, MessageID id, int8 lengthStyle, int lengthParam )
 	{
 		id_ = id;
 		lengthStyle_ = lengthStyle;
@@ -105,7 +104,7 @@ public:
 
 	int headerSize() const;
 	int nominalBodySize() const;
-	int compressLength( void * header, int length, UDPBundle * pBundle, 
+	int compressLength( void * header, int length, UDPBundle * pBundle,
 		bool isRequest ) const;
 	int expandLength( void * header, Packet * pPacket, bool isRequest ) const;
 	void unexpandLength( void * data, int length,
@@ -175,7 +174,7 @@ public:
 private:
 	void * specialCompressLength( void * data, int length,
 		Packet * pPacket, bool isRequest ) const;
-	int specialExpandLength( void * header, Packet * pPacket, 
+	int specialExpandLength( void * header, Packet * pPacket,
 		bool isRequest ) const;
 
 protected:

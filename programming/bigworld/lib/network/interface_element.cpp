@@ -25,7 +25,7 @@ const InterfaceElement InterfaceElement::REPLY( "Reply",
 	REPLY_MESSAGE_IDENTIFIER, VARIABLE_LENGTH_MESSAGE, 4 );
 
 
-const float InterfaceElementWithStats::AVERAGE_BIAS = 
+const float InterfaceElementWithStats::AVERAGE_BIAS =
 	EMA::calculateBiasFromNumSamples( 5 );
 
 // -----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ InterfaceElement::InterfaceElement( const char * name, MessageID id,
  *	@param srcAddr 				The source address of the message.
  *
  *	@return 					True if the message is valid and the length
- *								style and parameters were updated, false 
+ *								style and parameters were updated, false
  *								otherwise if this could not be done.
  */
 bool InterfaceElement::updateLengthDetails(
@@ -436,7 +436,7 @@ void InterfaceElement::unexpandLength( void * data, int length,
  *	by InterfaceElement::specialCompressLength. See that method for more
  *	details.
  */
-int InterfaceElement::specialExpandLength( void * data, Packet * pPacket, 
+int InterfaceElement::specialExpandLength( void * data, Packet * pPacket,
 		bool isRequest ) const
 {
 	// Read the length out of the first four bytes of the message.
@@ -514,7 +514,7 @@ int InterfaceElement::specialExpandLength( void * data, Packet * pPacket,
  *
  * 	@return Expanded length.
  */
-int InterfaceElement::expandLength( void * data, Packet * pPacket, 
+int InterfaceElement::expandLength( void * data, Packet * pPacket,
 		bool isRequest ) const
 {
 	switch (lengthStyle_)

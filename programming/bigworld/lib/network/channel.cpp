@@ -37,7 +37,7 @@ public:
 	 *										time before a channel is declared
 	 *										to have timed out.
 	 */
-	InactivityTimeoutChecker( Channel & channel, 
+	InactivityTimeoutChecker( Channel & channel,
 			uint64 inactivityExceptionPeriod ) :
 		TimerHandler(),
 		channel_( channel ),
@@ -52,7 +52,7 @@ public:
 	 */
 	virtual void handleTimeout( TimerHandle handle, void * pUser )
 	{
-		if ((timestamp() - channel_.lastReceivedTime()) > 
+		if ((timestamp() - channel_.lastReceivedTime()) >
 				inactivityExceptionPeriod_)
 		{
 			channel_.onChannelInactivityTimeout();
@@ -85,7 +85,7 @@ private:
  *	@param addr 				The address of the peer this channel connects
  *								to.
  */
-Channel::Channel( NetworkInterface & networkInterface, 
+Channel::Channel( NetworkInterface & networkInterface,
 			const Address & addr ):
 #if ENABLE_WATCHERS
 		WatcherProvider(),
@@ -162,11 +162,18 @@ void Channel::send( Bundle * pBundle /* = NULL */ )
 		pBundle = pBundle_;
 	}
 
+  // 在 UDP 可靠传输层中，周期性检查“未被确认（unacked）的可靠包”，并在满足条件时对它们进行
+  // 重发（resend），同时做限流和异常保护。
 	this->doPreFinaliseBundle( *pBundle );
 
 	pBundle->finalise();
 
-	this->networkInterface().addReplyOrdersTo( *pBundle, this );
+  // 把 Bundle(pBundle_)::replyOrders_ 里面的内容放入到 NetworkInterface(this->networkInterface)::pRequestManager_::requestMap_ 里面；
+  //
+  // bundle::replyOrders_ 是一个 ReplyOrder 结构体数组；里面的内容会在 Bundle(pBundle)::startRequest 调用时被添加；
+  //
+  // ReplyOrder 结构体有成员 ReplyMessageHandler；这个类中 handleMessage 函数会在消息被回复后调用；最终会完成 App 的 finishInit 的调用；
+	this->networkInterface().addReplyOrdersTo( *pBundle_, this );
 
 	this->doSend( *pBundle );
 
@@ -264,9 +271,9 @@ void Channel::startInactivityDetection( float period, float checkPeriod )
 	uint64 inactivityExceptionPeriod = uint64( period * stampsPerSecond() );
 	lastReceivedTime_ = timestamp();
 
-	inactivityTimerHandle_ = this->dispatcher().addTimer( 
+	inactivityTimerHandle_ = this->dispatcher().addTimer(
 			int( checkPeriod * 1000000 ),
-			new InactivityTimeoutChecker( *this, inactivityExceptionPeriod ), 
+			new InactivityTimeoutChecker( *this, inactivityExceptionPeriod ),
 			0, "ChannelInactivity" );
 }
 

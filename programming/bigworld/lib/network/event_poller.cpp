@@ -53,9 +53,9 @@ namespace Mercury
 /**
  *	Constructor.
  */
-EventPoller::EventPoller() : 
-	fdReadHandlers_(), 
-	fdWriteHandlers_(), 
+EventPoller::EventPoller() :
+	fdReadHandlers_(),
+	fdWriteHandlers_(),
 	spareTime_( 0 )
 {
 }
@@ -187,7 +187,7 @@ bool EventPoller::triggerError( int fd )
 	{
 		if (!iHandler->second.handleErrorNotification( fd ))
 		{
-			// Error notification did not handle error. Fallback to input 
+			// Error notification did not handle error. Fallback to input
 			// notification.
 			iHandler->second.handleInputNotification( fd );
 		}
@@ -200,7 +200,7 @@ bool EventPoller::triggerError( int fd )
 	{
 		if (!iHandler->second.handleErrorNotification( fd ))
 		{
-			// Error notification did not handle error. Fallback to input 
+			// Error notification did not handle error. Fallback to input
 			// notification.
 			iHandler->second.handleInputNotification( fd );
 		}
@@ -215,7 +215,7 @@ bool EventPoller::triggerError( int fd )
 
 /**
  *	This method returns whether or not a file descriptor is already registered.
- *	
+ *
  *	@param fd The file descriptor to test.
  *	@param isForRead Indicates whether checking for read or write registration.
  *
@@ -255,7 +255,7 @@ int EventPoller::getFileDescriptor() const
 
 
 /**
- *	Returns the largest file descriptor present in both the read or write 
+ *	Returns the largest file descriptor present in both the read or write
  *	handler maps. If neither have entries, -1 is returned.
  */
 int EventPoller::maxFD() const
@@ -267,7 +267,7 @@ int EventPoller::maxFD() const
 
 
 /**
- *	Return the largest file descriptor present in the given map. If the given 
+ *	Return the largest file descriptor present in the given map. If the given
  *	map is empty, -1 is returned.
  */
 int EventPoller::maxFD( const FDHandlers & handlerMap )
@@ -478,7 +478,7 @@ int SelectPoller::processPendingEvents( double maxWait )
 #endif // ENABLE_WATCHERS
 
 	int countReady = 0;
-	
+
 	BWConcurrency::startMainThreadIdling();
 	{
 		PROFILER_IDLE_SCOPED( Idle );
@@ -679,7 +679,7 @@ bool SelectPoller::doDeregisterForWrite( int fd )
 
 
 /**
- *	This class is an event poller based on the poll() system call available on 
+ *	This class is an event poller based on the poll() system call available on
  *	Linux (though in this case we use EPoller below), BSD, and Emscripten.
  */
 class PollPoller : public EventPoller
@@ -688,7 +688,7 @@ public:
 	/**
 	 *	Constructor.
 	 */
-	PollPoller() : 
+	PollPoller() :
 			EventPoller(),
 			container_( 16 ),
 			fdMap_()
@@ -788,7 +788,7 @@ const char * eventToCString( int event )
 
 
 /**
- *	Return a descriptive string of all the event codes present in the given 
+ *	Return a descriptive string of all the event codes present in the given
  *	event descriptor.
  *
  *	@param event 	The given event descriptor.
@@ -829,7 +829,7 @@ std::string eventsToCString( int event )
  *	@param event 		The event code(s) to register/unregister for.
  *
  *	@return 			True on success, false otherwise.
- */ 
+ */
 bool PollPoller::doRegister( int fd, bool isRegister, int event )
 {
 	FDMap::iterator iMapping = fdMap_.find( fd );
@@ -881,7 +881,7 @@ bool PollPoller::doRegister( int fd, bool isRegister, int event )
 void PollPoller::resize()
 {
 	Container newContainer( fdMap_.size() );
-	
+
 	for (FDMap::iterator iMapping = fdMap_.begin();
 			iMapping != fdMap_.end();
 			++iMapping)
@@ -1213,12 +1213,12 @@ WatcherPtr EventPoller::pWatcher()
 		watchMe->addChild( "fd",
 			makeWatcher( &EventPoller::getFileDescriptor ) );
 
-		MapWatcherPtr pReadFDs = 
+		MapWatcherPtr pReadFDs =
 			new MapWatcher<FDHandlers>( pNull->fdReadHandlers_ );
 		pReadFDs->addChild( "*", pFDWatcher );
 		watchMe->addChild( "readHandlers", pReadFDs );
 
-		MapWatcherPtr pWriteFDs = 
+		MapWatcherPtr pWriteFDs =
 			new MapWatcher<FDHandlers>( pNull->fdWriteHandlers_ );
 		pWriteFDs->addChild( "*", pFDWatcher );
 		watchMe->addChild( "writeHandlers", pWriteFDs );

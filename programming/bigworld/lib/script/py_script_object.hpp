@@ -95,7 +95,7 @@ public:
 
 
 /**
- *	The ScriptErrorPrint class will print and clear errors which occur when 
+ *	The ScriptErrorPrint class will print and clear errors which occur when
  *	executing script object methods.
  */
 class ScriptErrorPrint
@@ -226,7 +226,7 @@ public:
 	 *
 	 *	@param pObject		The Python object to construct the ScriptObject from
 	 *	@param alreadyIncremented	For this value you should use the relevent
-	 *		ScriptObject::FROM_NEW_REFERENCE or 
+	 *		ScriptObject::FROM_NEW_REFERENCE or
 	 *		ScriptObject::FROM_BORROWED_REFERENCE based on pObject
 	 */
 	ScriptObject( PyObject * pObject, bool alreadyIncremented ) :
@@ -259,8 +259,8 @@ public:
 
 
 	/**
-	 *	This method checks if the ScriptObject has an attribute. It is 
-	 *	recommended to use getAttribute if you plan on retreiving the 
+	 *	This method checks if the ScriptObject has an attribute. It is
+	 *	recommended to use getAttribute if you plan on retreiving the
 	 *	attribute if it exists.
 	 *
 	 *	@param key		The attribute key name
@@ -276,15 +276,15 @@ public:
 	 *	This method gets an attribute from a ScriptObject
 	 *
 	 *	@param key			The key to lookup within the ScriptObject
-	 *	@param errorHandler The type of error handling to use if this method 
+	 *	@param errorHandler The type of error handling to use if this method
 	 *		fails
 	 *	@return				The ScriptObject for the specified key
 	 */
 	template <class ERROR_HANDLER>
-	ScriptObject getAttribute( const char * key, 
+	ScriptObject getAttribute( const char * key,
 		const ERROR_HANDLER & errorHandler ) const
 	{
-		PyObject * result = PyObject_GetAttrString( this->get(), 
+		PyObject * result = PyObject_GetAttrString( this->get(),
 			const_cast< char * >( key ) );
 
 		errorHandler.checkPtrError( result );
@@ -401,13 +401,15 @@ public:
 	}
 
 
+  // 下面的函数实现在 py_script_object.ipp 文件中
+
 	template <class ERROR_HANDLER>
 	ScriptObject callMethod( const char * methodName,
 			const ERROR_HANDLER & errorHandler,
 			bool allowNullMethod = false ) const;
 
 	template <class ERROR_HANDLER>
-	ScriptObject callMethod( const char * methodName, 
+	ScriptObject callMethod( const char * methodName,
 			const ScriptArgs & args,
 			const ERROR_HANDLER & errorHandler,
 			bool allowNullMethod = false ) const;
@@ -505,11 +507,11 @@ public:
 	 *	@param type		The type object to check this object is a subclass of
 	 *	@param errorHandler The type of error handling to use if this method
 	 *		fails
-	 *	@return			True if this object is a subtype of type, 
+	 *	@return			True if this object is a subtype of type,
 	 *		false otherwise
 	 */
 	template <class ERROR_HANDLER>
-	bool isSubClass( const PyTypeObject & type, 
+	bool isSubClass( const PyTypeObject & type,
 		const ERROR_HANDLER & errorHandler ) const
 	{
 		int result = PyObject_IsSubclass( this->get(), (PyObject *)&type );
@@ -537,7 +539,7 @@ public:
 	static ScriptObject createFrom( TYPE val );
 
 	template <class ERROR_HANDLER, class TYPE>
-	bool convertTo( TYPE & rVal, const char * varName, 
+	bool convertTo( TYPE & rVal, const char * varName,
 			const ERROR_HANDLER & errorHandler ) const;
 
 	template <class ERROR_HANDLER, class TYPE>
@@ -651,7 +653,7 @@ inline bool operator>( const ScriptObject & obj1, const ScriptObject & obj2 )
 
 /**
  *	This class should be used as an alternative to SmartPointer<> for objects
- *	which inherit from PyObjectPlus. This provides them with the same 
+ *	which inherit from PyObjectPlus. This provides them with the same
  *	functionality as ScriptObject and also the same functionality as a normal
  *	SmartPointer to the object
  */
@@ -729,31 +731,31 @@ public:
 	static ScriptArgs create( const T1 & arg1, const T2 & arg2 );
 
 	template < typename T1, typename T2, typename T3 >
-	static ScriptArgs create( const T1 & arg1, const T2 & arg2, 
+	static ScriptArgs create( const T1 & arg1, const T2 & arg2,
 		const T3 & arg3 );
 
 	template < typename T1, typename T2, typename T3, typename T4 >
-	static ScriptArgs create( const T1 & arg1, const T2 & arg2, 
+	static ScriptArgs create( const T1 & arg1, const T2 & arg2,
 		const T3 & arg3, const T4 & arg4 );
 
 	template < typename T1, typename T2, typename T3, typename T4, typename T5 >
-	static ScriptArgs create( const T1 & arg1, const T2 & arg2, 
+	static ScriptArgs create( const T1 & arg1, const T2 & arg2,
 		const T3 & arg3, const T4 & arg4, const T5 & arg5 );
 
 	template < typename T1, typename T2, typename T3, typename T4, typename T5,
 		typename T6 >
-	static ScriptArgs create( const T1 & arg1, const T2 & arg2, 
+	static ScriptArgs create( const T1 & arg1, const T2 & arg2,
 		const T3 & arg3, const T4 & arg4, const T5 & arg5, const T6 & arg6 );
 
 	template < typename T1, typename T2, typename T3, typename T4, typename T5,
 		typename T6, typename T7 >
-	static ScriptArgs create( const T1 & arg1, const T2 & arg2, 
+	static ScriptArgs create( const T1 & arg1, const T2 & arg2,
 		const T3 & arg3, const T4 & arg4, const T5 & arg5, const T6 & arg6,
 		const T7 & arg7 );
 
 	template < typename T1, typename T2, typename T3, typename T4, typename T5,
 		typename T6, typename T7, typename T8 >
-	static ScriptArgs create( const T1 & arg1, const T2 & arg2, 
+	static ScriptArgs create( const T1 & arg1, const T2 & arg2,
 		const T3 & arg3, const T4 & arg4, const T5 & arg5, const T6 & arg6,
 		const T7 & arg7, const T8 & arg8 );
 };
@@ -768,6 +770,47 @@ public:
 class ScriptModule : public ScriptObject
 {
 public:
+  // ScriptModule() : ScriptObject() {}
+  // ScriptModule(PyObject *pObject, bool alreadyIncremented)
+  //     : ScriptObject(pObject, alreadyIncremented) {}
+  // explicit ScriptModule(const ScriptObject &object) : ScriptObject(object) {
+  //   if (!(!object.exists() || ScriptModule::check(object))) {
+  //     BW::CriticalMsg().write(
+  //         "ASSERTION FAILED: %s\n"
+  //         "programming/bigworld/lib/script/py_script_object.hpp"
+  //         "(%d)%s%s\n",
+  //         "!object.exists() || ScriptModule::check( object )", (int)771,
+  //         *__extension__ __PRETTY_FUNCTION__ ? " in " : "",
+  //         __extension__ __PRETTY_FUNCTION__);
+  //   };
+  // }
+  // explicit ScriptModule(const PyObjectPtr &object) : ScriptObject(object) {
+  //   if (!(!object.exists() || ScriptModule::check(*this))) {
+  //     BW::CriticalMsg().write(
+  //         "ASSERTION FAILED: %s\n"
+  //         "programming/bigworld/lib/script/py_script_object.hpp"
+  //         "(%d)%s%s\n",
+  //         "!object.exists() || ScriptModule::check( *this )", (int)771,
+  //         *__extension__ __PRETTY_FUNCTION__ ? " in " : "",
+  //         __extension__ __PRETTY_FUNCTION__);
+  //   };
+  // }
+  // ScriptModule(const ScriptModule &object)
+  //     : ScriptObject((const ScriptObject &)object) {}
+  // ScriptModule &operator=(const ScriptModule &other) {
+  //   this->ScriptObject::operator=(other);
+  //   return *this;
+  // }
+  // ScriptModule &operator=(const ScriptObject &other) {
+  //   this->ScriptObject::operator=(other);
+  //   return *this;
+  // }
+  // static ScriptModule create(const ScriptObject &other) {
+  //   if (other && ScriptModule::check(other)) {
+  //     return ScriptModule(other);
+  //   }
+  //   return ScriptModule();
+  // }
 	STANDARD_SCRIPT_OBJECT_IMP( ScriptModule, ScriptObject )
 
 	/**
@@ -824,11 +867,11 @@ public:
 	 *
 	 *	@param pType		The Python type to construct the ScriptType from
 	 *	@param alreadyIncremented	For this value you should use the relevent
-	 *		ScriptObject::FROM_NEW_REFERENCE or 
+	 *		ScriptObject::FROM_NEW_REFERENCE or
 	 *		ScriptObject::FROM_BORROWED_REFERENCE based on pType
 	 */
 	ScriptType( PyTypeObject * pType, bool alreadyIncremented ) :
-		ScriptObject( reinterpret_cast< PyObject * >( pType ), 
+		ScriptObject( reinterpret_cast< PyObject * >( pType ),
 					  alreadyIncremented )
 	{
 	}
@@ -892,7 +935,7 @@ public:
 	PyObject * genericAlloc( const ERROR_HANDLER & errorHandler ) const
 	{
 		// TODO: Need a nicer way of doing this
-		PyObject * pObject = PyType_GenericAlloc( 
+		PyObject * pObject = PyType_GenericAlloc(
 			(PyTypeObject*)this->get(), 0 );
 		errorHandler.checkPtrError( pObject );
 		return pObject;
@@ -926,7 +969,7 @@ public:
 
 	static ScriptDict create( int capacity = 0 );
 
-	bool next( size_type & pos, 
+	bool next( size_type & pos,
 		ScriptObject & key,
 		ScriptObject & value )
 	{
@@ -947,23 +990,23 @@ public:
 	template <class ERROR_HANDLER>
 	bool setItem( const char * key, const ScriptObject & value,
 		const ERROR_HANDLER & errorHandler ) const;
-		
+
 	template <class ERROR_HANDLER>
 	bool setItem( const ScriptObject & key, const ScriptObject & value,
 		const ERROR_HANDLER & errorHandler ) const;
 
 	template <class ERROR_HANDLER>
-	ScriptObject getItem( const char * key, 
+	ScriptObject getItem( const char * key,
 		const ERROR_HANDLER & errorHandler ) const;
-		
+
 	template <class ERROR_HANDLER>
-	ScriptObject getItem( const ScriptObject & key, 
+	ScriptObject getItem( const ScriptObject & key,
 		const ERROR_HANDLER & errorHandler ) const;
 
 	size_type size() const;
 
 	template <class ERROR_HANDLER>
-	bool update( const ScriptDict & other, 
+	bool update( const ScriptDict & other,
 		const ERROR_HANDLER & errorHandler ) const;
 };
 
@@ -993,7 +1036,7 @@ public:
 
 
 	template <class ERROR_HANDLER>
-	ScriptObject getItem( Py_ssize_t pos, 
+	ScriptObject getItem( Py_ssize_t pos,
 		const ERROR_HANDLER & errorHandler ) const;
 
 	template <class ERROR_HANDLER>
@@ -1122,7 +1165,7 @@ public:
 	static ScriptInt createFromString( const char * str, int base,
 		const ERROR_HANDLER & errorHandler )
 	{
-		PyObject * pInt = PyInt_FromString( 
+		PyObject * pInt = PyInt_FromString(
 				const_cast<char*>(str), NULL, base );
 		// Note: If overflow warnings supression may affect this
 		errorHandler.checkPtrError( pInt );
@@ -1138,10 +1181,10 @@ public:
 	static ScriptInt create( long value )
 	{
 		// Note from python manual:
-		// The current implementation keeps an array of integer objects for all 
+		// The current implementation keeps an array of integer objects for all
 		// integers between -5 and 256, when you create an int in that range you
-		// actually just get back a reference to the existing object. So it 
-		// should be possible to change the value of 1. I suspect the behaviour 
+		// actually just get back a reference to the existing object. So it
+		// should be possible to change the value of 1. I suspect the behaviour
 		// of Python in this case is undefined. :-)
 		PyObject * pInt = PyInt_FromLong( value );
 		MF_ASSERT( pInt );
@@ -1211,7 +1254,7 @@ public:
 	static ScriptLong createFromString( const char * str, int base,
 		const ERROR_HANDLER & errorHandler )
 	{
-		PyObject * pLong = PyLong_FromString( 
+		PyObject * pLong = PyLong_FromString(
 			const_cast<char*>(str), NULL, base );
 		errorHandler.checkPtrError( pLong );
 		return ScriptLong( pLong, ScriptObject::FROM_NEW_REFERENCE );
@@ -1319,7 +1362,7 @@ public:
 	 */
 	static ScriptString create( const char * str, int size )
 	{
-		PyObject * pStr = PyString_FromStringAndSize( 
+		PyObject * pStr = PyString_FromStringAndSize(
 				const_cast< char * >( str ), size );
 		MF_ASSERT( pStr );
 		return ScriptString( pStr, ScriptObject::FROM_NEW_REFERENCE );
@@ -1419,7 +1462,7 @@ public:
 
 	/**
 	 *	This method gets the keys from the mapping
-	 *	@param errorHandler The type of error handling to use if this method 
+	 *	@param errorHandler The type of error handling to use if this method
 	 *		fails
 	 *	@return				The keys list from the mapping object
 	 */
@@ -1434,7 +1477,7 @@ public:
 
 	/**
 	 *	This method gets the values from the mapping
-	 *	@param errorHandler The type of error handling to use if this method 
+	 *	@param errorHandler The type of error handling to use if this method
 	 *		fails
 	 *	@return				The values list from the mapping object
 	 */
@@ -1445,10 +1488,10 @@ public:
 		errorHandler.checkPtrError( pValues );
 		return ScriptList( pValues, ScriptObject::FROM_NEW_REFERENCE );
 	}
-	
+
 	/**
 	 *	This method gets list of the key-value pairs from the mapping
-	 *	@param errorHandler The type of error handling to use if this method 
+	 *	@param errorHandler The type of error handling to use if this method
 	 *		fails
 	 *	@return		The list of the key-value pairs from the mapping object
 	 */
@@ -1464,7 +1507,7 @@ public:
 	/**
 	 *	This method gets an item from a mapping
 	 *	@param key			The key of the item to retrieve
-	 *	@param errorHandler The type of error handling to use if this method 
+	 *	@param errorHandler The type of error handling to use if this method
 	 *		fails
 	 *	@return				The value of key
 	 */
@@ -1472,12 +1515,12 @@ public:
 	ScriptObject getItem( const char * key,
 		const ERROR_HANDLER & errorHandler ) const
 	{
-		PyObject * pItem = PyMapping_GetItemString( this->get(), 
+		PyObject * pItem = PyMapping_GetItemString( this->get(),
 			const_cast<char *>(key) );
 		errorHandler.checkPtrError( pItem );
 		return ScriptObject( pItem, ScriptObject::FROM_NEW_REFERENCE );
 	}
-	
+
 	/**
 	*	This method sets an item within the mapping
 	*	@param key		The key to set the item of
@@ -1487,7 +1530,7 @@ public:
 	*	@return			True if the value was successfully set, false otherwise
 	*/
 	template <class ERROR_HANDLER>
-	bool setItem( const char * key, 
+	bool setItem( const char * key,
 		const ScriptObject & value, const ERROR_HANDLER & errorHandler ) const
 	{
 		int result = PyMapping_SetItemString( this->get(),
@@ -1524,7 +1567,7 @@ public:
 	 *	@param bases		The base classes for the class
 	 *	@param dict			The dict for the class
 	 *	@param name			The name of the class
-	 *	@param errorHandler The type of error handling to use if this method 
+	 *	@param errorHandler The type of error handling to use if this method
 	 *		fails
 	 *	@return				A new class
 	 */
@@ -1627,7 +1670,7 @@ public:
 	{
 		// Note: This item return Py_None if the referent no longer exists
 		PyObject * pRefedObject = PyWeakref_GET_OBJECT( this->get() );
-		return ScriptObject( pRefedObject, 
+		return ScriptObject( pRefedObject,
 			ScriptObject::FROM_BORROWED_REFERENCE );
 	}
 };
@@ -1667,10 +1710,10 @@ public:
 	{
 		MF_ASSERT( !PyErr_Occurred() );
 		MF_ASSERT( PyType_Check( exceptionType_.get() ) );
-		MF_ASSERT( !exceptionTraceback_.exists() || 
+		MF_ASSERT( !exceptionTraceback_.exists() ||
 			PyTraceBack_Check( exceptionTraceback_.get() ) );
 
-		PyErr_Restore( exceptionType_.newRef(), 
+		PyErr_Restore( exceptionType_.newRef(),
 			exceptionValue_.newRef(),
 			exceptionTraceback_.newRef() );
 		PyErr_Print();
@@ -1687,11 +1730,11 @@ public:
 		PyObject * pyTraceback = NULL;
 		PyErr_Fetch( &pyType, &pyValue, &pyTraceback );
 
-		exceptionType_ = ScriptObject( pyType, 
+		exceptionType_ = ScriptObject( pyType,
 			ScriptObject::FROM_NEW_REFERENCE );
-		exceptionValue_ = ScriptObject( pyValue, 
+		exceptionValue_ = ScriptObject( pyValue,
 			ScriptObject::FROM_NEW_REFERENCE );
-		exceptionTraceback_ = ScriptObject( pyTraceback, 
+		exceptionTraceback_ = ScriptObject( pyTraceback,
 			ScriptObject::FROM_NEW_REFERENCE );
 	}
 

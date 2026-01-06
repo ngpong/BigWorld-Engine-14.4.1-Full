@@ -30,7 +30,7 @@ namespace Mercury
  */
 PacketSender::PacketSender( Endpoint & socket,
 		RequestManager & requestManager, EventDispatcher & eventDispatcher,
-		OnceOffSender & onceOffSender, SendingStats & sendingStats, 
+		OnceOffSender & onceOffSender, SendingStats & sendingStats,
 		PacketLossParameters & packetLossParameters ) :
 	socket_( socket ),
 	requestManager_( requestManager ),
@@ -170,7 +170,7 @@ bool PacketSender::rescheduleSend( const Address & addr,
 			{
 				DEBUG_MSG( "PacketSender::rescheduleSend( %s ): "
 						"dropped packet #%u to %s/%d due to artificial loss\n",
-					socket_.c_str(), pPacket->seq(), addr.c_str(), 
+					socket_.c_str(), pPacket->seq(), addr.c_str(),
 					pPacket->channelID() );
 			}
 			else
@@ -344,10 +344,10 @@ Reason PacketSender::basicSendWithRetries( const Address & addr,
  *	@return 		REASON_SUCCESS on success otherwise an appropriate
  *					Mercury::Reason.
  */
-Reason PacketSender::basicSendSingleTry( const Address & addr, 
+Reason PacketSender::basicSendSingleTry( const Address & addr,
 		Packet * pPacket )
 {
-	int len = socket_.sendto( pPacket->data(), pPacket->totalSize(), 
+	int len = socket_.sendto( pPacket->data(), pPacket->totalSize(),
 		addr.port, addr.ip );
 
 	if (len == pPacket->totalSize())

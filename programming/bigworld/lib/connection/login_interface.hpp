@@ -38,7 +38,7 @@ BW_BEGIN_NAMESPACE
 // -----------------------------------------------------------------------------
 
 
-// gLoginHandler and gProbeHandler below are only defined in 
+// gLoginHandler and gProbeHandler below are only defined in
 // loginapp/messsage_handlers.cpp:
 
 // class LoginAppRawMessageHandler;
@@ -55,7 +55,7 @@ BEGIN_MERCURY_INTERFACE( LoginInterface )
 
 	MERCURY_EMPTY_MESSAGE( probe, &gProbeHandler )
 
-	MERCURY_VARIABLE_MESSAGE( challengeResponse, 2, 
+	MERCURY_VARIABLE_MESSAGE( challengeResponse, 2,
 		&gChallengeResponseHandler )
 
 END_MERCURY_INTERFACE()

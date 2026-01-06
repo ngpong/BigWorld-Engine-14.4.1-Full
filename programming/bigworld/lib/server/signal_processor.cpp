@@ -18,7 +18,7 @@ namespace // (anonymous)
 const int SIGMIN = 1;
 const int SIGMAX = SIGSYS;
 
-const char * SIGNAL_NAMES[] = 
+const char * SIGNAL_NAMES[] =
 {
 	NULL,
 	"SIGHUP",
@@ -149,7 +149,7 @@ void SignalProcessor::setDefaultSignalHandler( int sigNum )
  *							sigaction struct - see man page for the sigaction
  *							function()).
  */
-void SignalProcessor::addSignalHandler( int sigNum, 
+void SignalProcessor::addSignalHandler( int sigNum,
 		SignalHandler * pSignalHandler, int flags )
 {
 	if (sigNum == SIGQUIT)
@@ -160,7 +160,7 @@ void SignalProcessor::addSignalHandler( int sigNum,
 	}
 	else
 	{
-		signalHandlers_.insert( 
+		signalHandlers_.insert(
 			SignalHandlers::value_type( sigNum, pSignalHandler ) );
 	}
 
@@ -170,7 +170,7 @@ void SignalProcessor::addSignalHandler( int sigNum,
 
 /**
  *	Enable signal detection for the given signal. All signals are blocked while
- *	the handler is executing. 
+ *	the handler is executing.
  *
  *	@param sigNum 			The signal number.
  *	@param flags			The signal action flags (the sa_flags member of the
@@ -216,7 +216,7 @@ void SignalProcessor::clearSignalHandlers( int sigNum )
  *	@param sigNum			The signal number.
  *	@param pSignalHandler	The signal handler to remove.
  */
-void SignalProcessor::clearSignalHandler( int sigNum, 
+void SignalProcessor::clearSignalHandler( int sigNum,
 		SignalHandler * pSignalHandler )
 {
 	if (sigNum == SIGQUIT)
@@ -224,7 +224,7 @@ void SignalProcessor::clearSignalHandler( int sigNum,
 		pSigQuitHandler_ = NULL;
 	}
 
-	std::pair< SignalHandlers::iterator, SignalHandlers::iterator > range = 
+	std::pair< SignalHandlers::iterator, SignalHandlers::iterator > range =
 		signalHandlers_.equal_range( sigNum );
 
 	SignalHandlers::iterator iSignalHandler = range.first;
@@ -279,7 +279,7 @@ void SignalProcessor::clearSignalHandler( SignalHandler * pSignalHandler )
 
 
 /**
- *	Handle the given signal. 
+ *	Handle the given signal.
  *
  *	This is called from the signal handling function registered with
  *	sigaction(). It shouldn't allocate any memory, and should be fast.
@@ -345,7 +345,7 @@ void SignalProcessor::dispatchSignal( int sigNum )
 	// signalHandlers_.
 	SignalHandlers copy( signalHandlers_ );
 
-	std::pair< SignalHandlers::iterator, SignalHandlers::iterator > range = 
+	std::pair< SignalHandlers::iterator, SignalHandlers::iterator > range =
 		copy.equal_range( sigNum );
 
 	SignalHandlers::iterator iSignalHandler = range.first;

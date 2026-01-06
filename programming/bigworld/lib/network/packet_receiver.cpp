@@ -95,13 +95,13 @@ int PacketReceiver::handleInputNotification( int fd )
 		shouldProcess = this->processSocket( sourceAddress, expectingPacket );
 		expectingPacket = false;
 
-		uint64 processingElapsedStamps = 
+		uint64 processingElapsedStamps =
 			BW_NAMESPACE timestamp() - processingStartStamps;
 
 		++numPacketsProcessed;
 
-		if (shouldProcess && 
-				(maxSocketProcessingTimeStamps_ != 0) && 
+		if (shouldProcess &&
+				(maxSocketProcessingTimeStamps_ != 0) &&
 				(processingElapsedStamps > maxSocketProcessingTimeStamps_))
 		{
 			WARNING_MSG( "PacketReceiver::handleInputNotification: "
@@ -109,7 +109,7 @@ int PacketReceiver::handleInputNotification( int fd )
 					"stopping socket processing after %.03fms "
 					"(processed %d packets), receive queue at %d bytes",
 				sourceAddress.c_str(),
-				processingElapsedStamps * 1000.f / 
+				processingElapsedStamps * 1000.f /
 					BW_NAMESPACE stampsPerSecondD(),
 				numPacketsProcessed,
 				networkInterface_.socket().receiveQueueSize() );
@@ -143,7 +143,7 @@ bool PacketReceiver::handleErrorNotification( int fd )
 		}
 		else if (networkInterface_.isVerbose())
 		{
-			UDPChannel * pChannel = 
+			UDPChannel * pChannel =
 				networkInterface_.findChannel( offender );
 			if (pChannel != NULL)
 			{
@@ -190,12 +190,12 @@ void PacketReceiver::handleTimeout( TimerHandle handle, void * pUser )
  *
  *	@param srcAddr 			This will be filled with the source address of any
  *							packets received.
- *	@param expectingPacket 	If true, a packet was expected to be read, 
+ *	@param expectingPacket 	If true, a packet was expected to be read,
  *							otherwise false.
  *
  *	@return 				True if a packet was read, otherwise false.
  */
-bool PacketReceiver::processSocket( Address & srcAddr, 
+bool PacketReceiver::processSocket( Address & srcAddr,
 		bool expectingPacket )
 {
 	stats_.updateSocketStats( socket_ );
@@ -390,7 +390,7 @@ bool PacketReceiver::checkSocketErrors( int len, bool expectingPacket )
  */
 void PacketReceiver::onConnectionRefusedTo( const Address & offender )
 {
-	UDPChannel * pDeadChannel = 
+	UDPChannel * pDeadChannel =
 		networkInterface_.findChannel( offender );
 
 	if (pDeadChannel &&
@@ -408,7 +408,7 @@ void PacketReceiver::onConnectionRefusedTo( const Address & offender )
 
 
 /**
- *	This method handles a message too long (EMSGSIZE) error  
+ *	This method handles a message too long (EMSGSIZE) error
  *    from the given offending address.
  *
  *	@param offender	The address that caused a message too long error.
@@ -417,7 +417,7 @@ void PacketReceiver::onConnectionRefusedTo( const Address & offender )
 void PacketReceiver::onMTUExceeded( const Address & offender,
 	 const uint32 & info )
 {
-	UDPChannel * pChannel = 
+	UDPChannel * pChannel =
 		networkInterface_.findChannel( offender );
 	if (pChannel)
 	{
@@ -477,11 +477,11 @@ Reason PacketReceiver::processPacket( const Address & addr, Packet * p,
 
 		return REASON_SUCCESS;
 	}
-	//use the network interface's default filter to filter out 
+	//use the network interface's default filter to filter out
 	//off channel malicious/noise packets
 	else if (networkInterface_.pOffChannelFilter())
 	{
-		return networkInterface_.pOffChannelFilter()->recv( *this, 
+		return networkInterface_.pOffChannelFilter()->recv( *this,
 											addr, p, pStatsHelper );
 	}
 
@@ -577,7 +577,7 @@ Reason PacketReceiver::processFilteredPacket( const Address & addr,
 		if (networkInterface_.isVerbose())
 		{
 			WARNING_MSG( "PacketReceiver::processFilteredPacket( %s ): "
-					"Invalid checksum\n", 
+					"Invalid checksum\n",
 				addr.c_str() );
 		}
 
@@ -923,7 +923,7 @@ Reason PacketReceiver::processFilteredPacket( const Address & addr,
 			{
 				WARNING_MSG( "PacketReceiver::processFilteredPacket( %s ): "
 						"Dropping packet due to illegal request for "
-						"reliability without related sequence number\n", 
+						"reliability without related sequence number\n",
 					addr.c_str() );
 			}
 
@@ -1048,8 +1048,8 @@ Reason PacketReceiver::processFilteredPacket( const Address & addr,
 		pCurrPacket->chain( NULL );
 
 		// Make sure they are actually packets with consecutive sequences.
-		MF_ASSERT( pNextPacket.get() == NULL || 
-			seqMask( pCurrPacket->seq() + 1 ) == 
+		MF_ASSERT( pNextPacket.get() == NULL ||
+			seqMask( pCurrPacket->seq() + 1 ) ==
 				pNextPacket->seq() );
 
 		// At this point, the only footers left on the packet should be the
@@ -1200,7 +1200,7 @@ Reason PacketReceiver::processOrderedPacket( const Address & addr, Packet * p,
 			(isOnChannel && pChannel->pFragments() != NULL))
 	{
 		// Make sure that for incoming non-fragment packets with sequence
-		// numbers, we are not expecting them to be fragments. 
+		// numbers, we are not expecting them to be fragments.
 		if (networkInterface_.isExternal())
 		{
 			if (networkInterface_.isVerbose())
@@ -1416,7 +1416,7 @@ void PacketReceiver::maxSocketProcessingTime( float value )
 	}
 	else
 	{
-		maxSocketProcessingTimeStamps_ = uint64( value * 
+		maxSocketProcessingTimeStamps_ = uint64( value *
 			BW_NAMESPACE stampsPerSecondD() );
 	}
 }

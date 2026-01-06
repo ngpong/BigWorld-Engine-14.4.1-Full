@@ -59,14 +59,14 @@ public:
 		InputNotificationHandler * handler,
 		const char * name = "NotNamed" );
 	bool deregisterFileDescriptor( int fd );
-	
+
 	bool registerWriteFileDescriptor( int fd,
 		InputNotificationHandler * handler,
 		const char * name = "NotNamed" );
 	bool deregisterWriteFileDescriptor( int fd );
 
-	INLINE TimerHandle addTimer( int64 microseconds, 
-		TimerHandler * handler, void * arg = NULL, 
+	INLINE TimerHandle addTimer( int64 microseconds,
+		TimerHandler * handler, void * arg = NULL,
 		const char * name = "UnnamedTimer" );
 	INLINE TimerHandle addOnceOffTimer( int64 microseconds,
 		TimerHandler * handler, void * arg = NULL,
@@ -87,8 +87,8 @@ public:
 	INLINE void maxWait( double seconds );
 
 	ErrorReporter & errorReporter()	{ return *pErrorReporter_; }
-	
-	
+
+
 	int numChildren() const
 	{
 		return static_cast<int>( childDispatchers_.size() );

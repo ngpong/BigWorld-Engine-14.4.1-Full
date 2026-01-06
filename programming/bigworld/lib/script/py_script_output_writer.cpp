@@ -327,14 +327,14 @@ void ScriptOutputWriter::handleWrite( const BW::string & msg, bool isStderr )
 			BW::string::size_type lineEnd = buffer.find( '\n', lineStart );
 
 			BW::string line( buffer.data() + lineStart,
-				(lineEnd != BW::string::npos) ? 
+				(lineEnd != BW::string::npos) ?
 					(lineEnd - lineStart) : (buffer.size() - lineStart) );
 
 			LogMsg( isStderr ? MESSAGE_PRIORITY_ERROR : MESSAGE_PRIORITY_INFO ).
 				source( MESSAGE_SOURCE_SCRIPT ).
 				write( "%s\n", line.c_str() );
 
-			lineStart = (lineEnd != BW::string::npos) ? 
+			lineStart = (lineEnd != BW::string::npos) ?
 				(lineEnd + 1) : BW::string::npos;
 		}
 		while (lineStart != BW::string::npos);

@@ -45,12 +45,12 @@ const double DBAppMgr::ADD_WAIT_TIME_SECONDS = 1.0;
 template<>
 struct DBAppMgr::DBApps::MapStreaming
 {
-	
+
 	/**
 	 *	This static method adds the given map to the stream, overriding
 	 *	the default template implementation for generic maps.
 	 */
-	static void addToStream( BinaryOStream & os, 
+	static void addToStream( BinaryOStream & os,
 			const BW::map< DBAppID, DBAppPtr > & map )
 	{
 		os.writePackedInt( static_cast< int >( map.size() ) );
@@ -135,11 +135,13 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 	PROC_IP_INFO_MSG( "Internal address = %s\n",
 		this->interface().address().c_str() );
 
+  // 注册内部网络接口
 	DBAppMgrInterface::registerWithInterface( interface_ );
 
+  // 向 bwmachined 中查找 cellappmgr 的地址
 	// Find CellAppMgr.
 	Mercury::Address cellAppMgrAddress;
-	Mercury::Reason reason = Mercury::MachineDaemon::findInterface( 
+	Mercury::Reason reason = Mercury::MachineDaemon::findInterface(
 		"CellAppMgrInterface", 0, cellAppMgrAddress,
 		Config::numStartupRetries() );
 
@@ -150,8 +152,10 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 		return false;
 	}
 
+  // 根据 cellappmgr 的地址创建新的通信管道
 	cellAppMgr_.addr( cellAppMgrAddress );
 
+  // 向 bwmachined 中查找 baseappmgr 的地址
 	// Find and contact BaseAppMgr.
 	Mercury::Address baseAppMgrAddress;
 	reason = Mercury::MachineDaemon::findInterface( "BaseAppMgrInterface",
@@ -164,8 +168,11 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 		return false;
 	}
 
+  // 根据 baseappmgr 的地址创建新的通信管道
 	baseAppMgr_.addr( baseAppMgrAddress );
 
+  // 远程调用 baseappmgr 的 requestHasStarted 接口；
+  // 此处会阻塞等待直至 baseappmgr 回复，这么做的目的可能是要求 baseappmgr 必须已启动
 	Mercury::BlockingReplyHandlerWithResult< bool > hasStartedHandler(
 		this->interface() );
 	baseAppMgr_.bundle().startRequest( BaseAppMgrInterface::requestHasStarted,
@@ -187,9 +194,15 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 		// some DBApps.
 		dbAppAddStartWaitTime_ = TimeStamp( BW::timestamp() );
 
+    // 此处等待了2秒后才会设置 shouldAcceptLoginApps_ = true; 该变量能够控
+    // 制 DBAppMgr::addLoginApp 是否正常执行；
+    //
+    // 这么做的目的，可能是想让这2秒在本机内尽量完成了初始化工作后才开始接
+    // 收 loginapp 的请求；
+    //
 		// If we are recovering wait 2 seconds to collect all LoginApps and
 		// DBApps
-		gatherLoginAppsTimer_ = 
+		gatherLoginAppsTimer_ =
 			mainDispatcher_.addOnceOffTimer( 2000000,
 			this,
 			reinterpret_cast< void * >( TIMEOUT_GATHER_LOGIN_APPS ),
@@ -206,9 +219,8 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 
 	// Finish registration.
 
-	reason =
-		DBAppMgrInterface::registerWithMachined( interface_, 0 );
-
+  // 注册本机接口 ProcessMessage::REGISTER 事件至 bwmachined
+	reason = DBAppMgrInterface::registerWithMachined( interface_, 0 );
 	if (reason != Mercury::REASON_SUCCESS)
 	{
 		NETWORK_ERROR_MSG( "DBAppMgr::init: "
@@ -216,9 +228,12 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 		return false;
 	}
 
+  // 向 bwmachined 发送 MachineGuardMessage::LISTENER_MESSAGE 注册名为 "DBAppMgrInterface" 网络接
+  // 口的监听事件；该事件主要是跟网络接口的创建与注销相关的回调；
+
 	Mercury::MachineDaemon::registerBirthListener( this->interface().address(),
 		DBAppMgrInterface::handleDBAppMgrBirth, "DBAppMgrInterface" );
-	
+
 	// Register dead app callback with machined
 	Mercury::MachineDaemon::registerDeathListener( this->interface().address(),
 		DBAppMgrInterface::handleDBAppDeath, "DBAppInterface" );
@@ -235,6 +250,7 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 
 	ReviverSubject::instance().init( &(this->interface()), "dbAppMgr" );
 
+  // 此处启动每秒一次 tick 的计时器调用 this->advanceTime()，应该是用于更新游戏时间的
 	tickTimer_ = mainDispatcher_.addTimer(
 		1000000 / Config::updateHertz(),
 		this, (void *)TIMEOUT_TICK,
@@ -255,7 +271,7 @@ bool DBAppMgr::init( int argc, char * argv[] ) /* override */
 void DBAppMgr::controlledShutDown(
 		const DBAppMgrInterface::controlledShutDownArgs & args )
 {
-	DEBUG_MSG( "DBAppMgr::controlledShutDown: stage = %s\n", 
+	DEBUG_MSG( "DBAppMgr::controlledShutDown: stage = %s\n",
 		ServerApp::shutDownStageToString( args.stage ) );
 
 	switch (args.stage)
@@ -267,7 +283,7 @@ void DBAppMgr::controlledShutDown(
 
 		isShuttingDown_ = true;
 
-		BaseAppMgrInterface::controlledShutDownArgs & args = 
+		BaseAppMgrInterface::controlledShutDownArgs & args =
 			args.start( baseAppMgr_.bundle() );
 		args.stage = SHUTDOWN_REQUEST;
 		args.shutDownTime = 0;
@@ -275,7 +291,7 @@ void DBAppMgr::controlledShutDown(
 
 		break;
 	}
-	
+
 	case SHUTDOWN_PERFORM:
 	{
 		INFO_MSG( "DBAppMgr::controlledShutDown: "
@@ -326,7 +342,7 @@ void DBAppMgr::handleLoginAppDeath(
 }
 
 
-/** 
+/**
  *	This method is called when a BaseApp death dies.
  */
 void DBAppMgr::handleBaseAppDeath( BinaryIStream & data )
@@ -346,7 +362,7 @@ void DBAppMgr::handleBaseAppDeath( BinaryIStream & data )
 			++iter)
 	{
 		DBApp & dbApp = *(iter->second);
-		
+
 		Mercury::Bundle & bundle = dbApp.channelOwner().bundle();
 		bundle.startMessage( DBAppInterface::handleBaseAppDeath );
 		bundle.addBlob( pData, dataLength );
@@ -481,13 +497,13 @@ void DBAppMgr::addDBApp( const Mercury::Address & srcAddr,
 	const Mercury::UnpackedMessageHeader & header )
 {
 	const bool wasEmpty = dbApps_.empty();
-	
+
 	if (startupState_ == STARTUP_STATE_INDETERMINATE)
 	{
 		MF_ASSERT( !wasEmpty );
 		// The Alpha DBApp has not finished initialization yet, other DBApps
-		// should retry. 
-		Mercury::Channel & channel = 
+		// should retry.
+		Mercury::Channel & channel =
 			this->getChannel< DBAppMgr >( srcAddr );
 		channel.bundle().startReply( header.replyID );
 		channel.send();
@@ -545,7 +561,7 @@ void DBAppMgr::recoverDBApp( const Mercury::Address & srcAddr,
 
 	dbApps_.insert( std::make_pair( id, pDBApp ) );
 	addressMap_[ srcAddr ] = pDBApp;
-	
+
 	DEBUG_MSG( "DBAppMgr::recoverDBApp: id = %d, addr = %s\n",
 		pDBApp->id(), srcAddr.c_str() );
 }
@@ -626,7 +642,7 @@ void DBAppMgr::handleDBAppDeath( const Mercury::Address & addr )
 	if (wasAlpha && pAlphaApp)
 	{
 		DEBUG_MSG( "DBAppMgr::handleDBAppDeath: new DBApp Alpha: %d (%s)\n",
-			pAlphaApp->id(), pAlphaApp->address().c_str() );		
+			pAlphaApp->id(), pAlphaApp->address().c_str() );
 	}
 
 	this->sendDBAppHashUpdate( /* haveNewAlpha */ wasAlpha );
@@ -652,7 +668,7 @@ void DBAppMgr::sendDBAppHashUpdate( bool haveNewAlpha )
 	{
 		DBAppPtr pDBApp = iter->second;
 
-		const bool shouldAlphaResetGameServerState = 
+		const bool shouldAlphaResetGameServerState =
 			(iter == dbApps_.begin()) &&
 				(startupState_ == STARTUP_STATE_NOT_STARTED);
 
@@ -677,7 +693,7 @@ void DBAppMgr::sendDBAppHashUpdate( bool haveNewAlpha )
 		const Mercury::Address newAlpha = (!dbApps_.empty() ?
 				this->dbAppAlpha()->address() :
 				Mercury::Address::NONE);
-	
+
 		// Inform CellAppMgr.
 		this->sendDBAppHashUpdateToCellAppMgr();
 
@@ -686,10 +702,10 @@ void DBAppMgr::sendDBAppHashUpdate( bool haveNewAlpha )
 				iter != loginApps_.end();
 				++iter)
 		{
-			Mercury::Channel & channel = 
+			Mercury::Channel & channel =
 				this->getChannel< DBAppMgr >( *iter );
 
-			LoginIntInterface::notifyDBAppAlphaArgs & args = 
+			LoginIntInterface::notifyDBAppAlphaArgs &args =
 				args.start( channel.bundle() );
 
 			args.addr = newAlpha;
@@ -763,7 +779,7 @@ void DBAppMgr::addLoginApp( const Mercury::Address & srcAddr,
 
 	loginApps_.insert( srcAddr );
 
-	Mercury::Address dbAppAlphaAddress = !dbApps_.empty() ? 
+	Mercury::Address dbAppAlphaAddress = !dbApps_.empty() ?
 		this->dbAppAlpha()->address() : Mercury::Address::NONE;
 
 	bundle << ++lastLoginAppID_ << dbAppAlphaAddress;
@@ -811,7 +827,7 @@ void DBAppMgr::serverHasStarted( bool hasStarted /* = true */ )
 
 	startupState_ = (hasStarted ?
 		STARTUP_STATE_STARTED : STARTUP_STATE_NOT_STARTED);
-	
+
 	DEBUG_MSG( "DBAppMgr::serverHasStarted: %s\n",
 		hasStarted ? "true" : "false" );
 
@@ -823,7 +839,7 @@ void DBAppMgr::serverHasStarted( bool hasStarted /* = true */ )
 
 		// If we had a DBApp to become the new Alpha, then it will be told to
 		// retry first-time initialisation.
-		MF_ASSERT( (startupState_ == STARTUP_STATE_STARTED) || 
+		MF_ASSERT( (startupState_ == STARTUP_STATE_STARTED) ||
 			(startupState_ == STARTUP_STATE_INDETERMINATE) );
 	}
 //	else if (startupState_ == STARTUP_STATE_NOT_STARTED)
@@ -857,7 +873,7 @@ void DBAppMgr::addWatchers()
 		DBApp::pWatcher() ) );
 
 	root.addChild( "dbApps", dbAppsWatcher, &dbApps_ );
-	
+
 	root.addChild( "alphaAppID", makeWatcher( &DBAppMgr::alphaID ),
 		this );
 }

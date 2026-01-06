@@ -65,9 +65,9 @@ const char * NetworkInterface::USE_BWMACHINED = "bwmachined";
 /**
  *  How much buffer we want for sockets.
  */
-int NetworkInterface::recvBufferSize_ = getMaxBufferSize( 
+int NetworkInterface::recvBufferSize_ = getMaxBufferSize(
 											/*isReadBuffer:*/ true );
-int NetworkInterface::sendBufferSize_ = getMaxBufferSize( 
+int NetworkInterface::sendBufferSize_ = getMaxBufferSize(
 											/*isReadBuffer:*/ false );
 
 
@@ -106,7 +106,7 @@ NetworkInterface::NetworkInterface( Mercury::EventDispatcher * pMainDispatcher,
 	pMainDispatcher_( NULL ),
 	pInterfaceTable_( new InterfaceTable( *pDispatcher_ ) ),
 	pOffChannelFilter_(),
-	pRequestManager_( new RequestManager( isExternal_, 
+	pRequestManager_( new RequestManager( isExternal_,
 		*pDispatcher_ ) ),
 	pExtensionData_( NULL ),
 	pOnceOffSender_( new OnceOffSender() ),
@@ -430,7 +430,7 @@ bool NetworkInterface::recreateListeningSocket( uint16 listeningPort,
 #ifdef __APPLE__
 	udpSocket_.setSocketOption( SOL_SOCKET, SO_NOSIGPIPE, true );
 #endif
-	
+
 #ifdef MF_SERVER
 	if (!udpSocket_.setBufferSize( SO_RCVBUF, recvBufferSize_ ))
 	{
@@ -567,7 +567,7 @@ NetworkInterface::IndexedChannelFinderResult
 /**
  *	This method finds the condemned channel with the indexed ChannelID.
  */
-UDPChannelPtr NetworkInterface::findCondemnedChannel( 
+UDPChannelPtr NetworkInterface::findCondemnedChannel(
 		ChannelID channelID ) const
 {
 	return pCondemnedChannels_->find( channelID );
@@ -868,7 +868,7 @@ void NetworkInterface::dropNextSend()
  *
  *	@return 	True if checksums are used, false otherwise.
  */
-bool NetworkInterface::shouldUseChecksums() const 
+bool NetworkInterface::shouldUseChecksums() const
 {
 	return pPacketSender_->shouldUseChecksums();
 }
@@ -1006,7 +1006,7 @@ const PacketReceiverStats & NetworkInterface::receivingStats() const
  *
  *	@return the maximum socket processing time limit.
  */
-float NetworkInterface::maxSocketProcessingTime() const 
+float NetworkInterface::maxSocketProcessingTime() const
 {
 	return pPacketReceiver_->maxSocketProcessingTime();
 }
@@ -1052,7 +1052,7 @@ const char * VERBOSITY_LEVEL_NAMES[] =
  */
 const char * verbosityLevelToString( NetworkInterface::VerbosityLevel level )
 {
-	if ((level < NetworkInterface::VERBOSITY_LEVEL_QUIET) || 
+	if ((level < NetworkInterface::VERBOSITY_LEVEL_QUIET) ||
 			(level > NetworkInterface::VERBOSITY_LEVEL_MAX))
 	{
 		return NULL;
@@ -1198,12 +1198,12 @@ WatcherPtr NetworkInterface::pWatcher()
 				&NetworkInterface::perIPAddressRateLimit ) );
 
 		pWatcher->addChild( "rateLimit/perIPAddressPortLimit",
-			makeNonRefWatcher( *pNull, 
+			makeNonRefWatcher( *pNull,
 				&NetworkInterface::perIPAddressPortRateLimit,
 				&NetworkInterface::perIPAddressPortRateLimit ) );
 
 		pWatcher->addChild( "rateLimit/stats/perIPAddressAverage",
-			makeWatcher< float, AccumulatingEMA< uint > >( 
+			makeWatcher< float, AccumulatingEMA< uint > >(
 				pNull->ipAddressRateLimitAverage_,
 				&AccumulatingEMA< uint >::average ) );
 

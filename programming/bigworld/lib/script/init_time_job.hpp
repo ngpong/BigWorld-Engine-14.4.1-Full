@@ -26,6 +26,45 @@ namespace Script
  *	(it cannot call its init fn because the derived constructor
  *	 hasn't finished)
  */
+
+// childrens:
+// • UserDataObjectIniter:
+//   • programming/bigworld/lib/chunk/user_data_object.cpp:56
+//
+// • PyEmptyClassObject:
+//   • programming/bigworld/lib/entitydef/data_instances/class_data_instance.cpp:82
+//
+// • InitVNV
+//
+// • PyModuleMethodLink:
+//   • PY_MODULE_FUNCTION[_WITH_DOC]
+//   • PY_MODULE_FUNCTION_WITH_KEYWORDS[_WITH_DOC]
+//   • PY_AUTO_MODULE_FUNCTION[_WITH_DOC]
+//   • PY_MODULE_FUNCTION_ALIAS[_WITH_DOC]
+//   • PY_MODULE_STATIC_METHOD_DECLARE[_WITH_DOC]
+//   • PY_UNPICKLING_FACTORY_DECLARE
+//   • PY_AUTO_MODULE_STATIC_METHOD_DECLARE
+//   • PY_MODULE_STATIC_METHOD[_WITH_DOC]
+//   • PY_UNPICKLING_FUNCTION[_WITH_DOC]
+//   • PY_AUTO_UNPICKLING_FUNCTION[_WITH_DOC]
+//   • PY_AUTO_UNPICKLING_FACTORY_DECLARE
+//   • PY_UNPICKLING_FACTORY
+//
+// • PyModuleResultLink:
+//   • PY_MODULE_ATTRIBUTE
+//
+// • BuildEntityTypeDict
+//   • programming/bigworld/server/cellapp/entity.cpp:1162
+//
+// • PyFactoryMethodLink
+//   • programming/bigworld/lib/fmodsound/py_sound.cpp:193
+//   • programming/bigworld/lib/fmodsound/py_sound_parameter.cpp:87
+//   • programming/bigworld/lib/fmodsound/py_music_system.cpp:153
+//   • PY_FACTORY_METHOD_LINK_DECLARE()
+//   • PY_FACTORY_NAMED(THIS_CLASS, METHOD_NAME, MODULE_NAME)
+//
+// • TempPyVectorInit: unused
+// • PyModuleAttrLink: unused
 class InitTimeJob
 {
 public:

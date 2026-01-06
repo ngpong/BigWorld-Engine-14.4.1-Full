@@ -30,11 +30,11 @@ PyObject * PyImportPaths::pathAsObject() const
 
 	size_t i = 0;
 	for (OrderedPaths::const_iterator iPath = paths_.begin();
-			iPath != paths_.end(); 
+			iPath != paths_.end();
 			++iPath)
 	{
 		pPath = Script::getData( bw_utf8tow( (*iPath).c_str()) );
-		if (pPath != NULL) 
+		if (pPath != NULL)
 		{
 			PyList_SetItem(pResult, i, pPath);
 			++i;

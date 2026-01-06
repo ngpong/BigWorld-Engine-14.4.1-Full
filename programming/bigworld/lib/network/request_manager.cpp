@@ -133,7 +133,7 @@ void RequestManager::addReplyOrder( const ReplyOrder & replyOrder,
 	ReplyID replyIDNBO = BW_HTONL( replyID );
 	memcpy( replyOrder.pReplyID, &replyIDNBO, sizeof(replyIDNBO) );
 #else // !defined( BW_ENFORCE_ALIGNED_ACCESS )
-	ReplyID * pReplyID = reinterpret_cast< ReplyID * >( 
+	ReplyID * pReplyID = reinterpret_cast< ReplyID * >(
 		replyOrder.pReplyID );
 	*pReplyID = BW_HTONL( replyID );
 #endif // defined( BW_ENFORCE_ALIGNED_ACCESS )

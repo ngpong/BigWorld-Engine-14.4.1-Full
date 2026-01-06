@@ -201,6 +201,11 @@ bool ScriptApp::initScript( const char * componentName,
 
 	paths.addResPath( EntityDef::Constants::serverCommonPath() );
 
+  // 初始化 python 解释器；
+  // 注册一些基础的模块；
+  // 创建 BigWorld 模块；
+  // 映射一些 C 函数到 Python；
+  // 创建 Python 函数入口点；
 	if (!Script::init( paths, componentName ))
 	{
 		return false;
@@ -216,6 +221,8 @@ bool ScriptApp::initScript( const char * componentName,
 		ScriptString::create( ServerAppConfig::serverMode() ),
 		ScriptErrorPrint() );
 
+  // 初始化了全局变量 s_classDeferred；
+  // 该变量是 twisted.internet.defer 模块中的 Deferred 类；
 	if (!PyDeferred::staticInit())
 	{
 		ERROR_MSG( "ScriptApp::initScript: Initialising PyDeferred failed.\n" );
@@ -264,7 +271,7 @@ bool ScriptApp::triggerDelayableEvent( const char * eventName,
 	if (pDelayedEvent)
 	{
 		pDelayedEvent->decrement();
-		Py_DECREF( pDelayedEvent ); 
+		Py_DECREF( pDelayedEvent );
 		if (!mainDispatcher_.processingBroken())
 		{
 			mainDispatcher_.processContinuously();

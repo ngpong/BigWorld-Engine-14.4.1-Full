@@ -262,7 +262,7 @@ namespace Python_Memhooks
 {
 	void* malloc( size_t size )
 	{
-		// Ignoring python leaks for now, until all other leaks are 
+		// Ignoring python leaks for now, until all other leaks are
 		// resolved.
 		BW::Allocator::allocTrackingIgnoreBegin();
 
@@ -281,13 +281,13 @@ namespace Python_Memhooks
 
 	void* realloc( void* mem, size_t size )
 	{
-		// Ignoring python leaks for now, until all other leaks are 
+		// Ignoring python leaks for now, until all other leaks are
 		// resolved.
 		BW::Allocator::allocTrackingIgnoreBegin();
-		
+
 		MEMTRACKER_SCOPED( Script_Python );
 		void* ptr = bw_realloc( mem, size );
-		
+
 		BW::Allocator::allocTrackingIgnoreEnd();
 
 		return ptr;
@@ -344,7 +344,7 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 	{
 		BW_Py_Hooks pythonHooks;
 		bw_zero_memory( &pythonHooks, sizeof( pythonHooks ) );
-		
+
 		//pythonHooks.mallocHook = Python_Memhooks::malloc;
 		//pythonHooks.freeHook = Python_Memhooks::free;
 		//pythonHooks.reallocHook = Python_Memhooks::realloc;
@@ -365,7 +365,11 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 #if !BWCLIENT_AS_PYTHON_MODULE
 	// Add extra paths to the input ones
 	BW::string commonPath( EntityDef::Constants::commonPath() );
+  // game/res/fantasydemo/scripts/common
+  // game/res/bigworld/scripts/common
 	sysPaths.addResPath( commonPath );
+  // game/res/fantasydemo/scripts/common/Lib
+  // game/res/bigworld/scripts/common/Lib
 	sysPaths.addResPath( commonPath + "/Lib" );
 #if defined( _WIN64 ) || defined( _WIN32 )
 	BW::string clientDLLsPath( EntityDef::Constants::entitiesClientPath() );
@@ -390,6 +394,8 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 			shortPlatformName.c_str(), BW_BUILD_PLATFORM );
 	}
 
+  // game/res/bigworld/scripts/server_common/lib-dynload-el7_debug/
+  // game/res/fantasydemo/scripts/server_common/lib-dynload-el7_debug/
 	sysPaths.addResPath( serverCommonPath );
 #endif
 
@@ -405,6 +411,7 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 	Py_NoSiteFlag = 1;
 	Py_IgnoreEnvironmentFlag = 1;
 
+  // 初始化 Python 解释器
 	Py_Initialize();
 
 	// TODO: If BWCLIENT_AS_PYTHON_MODULE, still override stdio but
@@ -422,7 +429,9 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 
 #if !BWCLIENT_AS_PYTHON_MODULE
 
+  // 此处将 sysPaths 中的内容转化为 python 的字符串对象
 	PyObject * pSys = sysPaths.pathAsObject();
+  // 设置 sys.path；即导入模块时的搜索路径
 	int result = PySys_SetObject( "path", pSys );
 	Py_DECREF( pSys );
 	if (result != 0)
@@ -437,16 +446,27 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 		PyEval_SetProfile( &profileFunc, NULL );
 	#endif
 
+  // 任何直接或间接构造了 InitTimeJob 的对象都会写入到 s_initTimeJobsMap 中；
+  //
+  // s_initTimeJobsMap 所保存的是一种能够实现将 C 函数注册到 Python 模块（包括
+  // 但不限于直接注册到 BigWorld 模块里面）的对象；
+  //
+  // 要查找什么情况下回构造 InitTimeJob，查看 init_time_job.hpp 中的注释信息；
+  // 一个例子是 py_network.cpp 文件中，registerFileDescriptor 函数中的附加注释信息；
+  //
 	// Run any init time jobs, including creating modules and adding methods
 	// Note: Personality::onInit is run later, when the Personality script is
 	// imported.
 	runInitTimeJobs();
 
+  // 调用 python 的 gc 模块的 disable 函数
 	// Disable garbage collection
 	disablePythonGarbage();
 
+  // 获取或创建 BigWorld 模块
 	ScriptModule bigWorld = ScriptModule::getOrCreate( "BigWorld",
 		ScriptErrorPrint( "Failed to create BigWorld module" ) );
+
 	/*~ attribute BigWorld.component
 	 *  @components{ all }
 	 *
@@ -454,10 +474,11 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 	 *	Possible values are (so far) 'cell', 'base', 'client', 'database', 'bot'
 	 *	and 'editor'.
 	 */
-	bigWorld.setAttribute( "component", 
+	bigWorld.setAttribute( "component",
 		ScriptString::create( componentName ),
 		ScriptErrorPrint() );
 
+  // 此处的 Modules 应该是包含了 runInitTimeJobs 执行时创建的一些东西
 	s_pOurInitTimeModules = PyDict_Copy( PySys_GetObject( "modules" ) );
 	s_pMainThreadState = PyThreadState_Get();
 	s_defaultContext = s_pMainThreadState;
@@ -468,12 +489,14 @@ bool Script::init( const PyImportPaths & appPaths, const char * componentName )
 
 	s_isInitalised = true;
 
+  // bw_site.py 是函数入口点
 	if (!ScriptModule::import( "bw_site", ScriptErrorPrint(
 		"Script::init: Unable to import bw_site\n" ) ))
 	{
 		return false;
 	}
 
+  // Pickler 是实现 Python 中 cPickle 模块的抽象
 	if (!Pickler::init())
 	{
 		ERROR_MSG( "Script::init: Pickler failed to initialise\n" );
@@ -495,7 +518,7 @@ void Script::disablePythonGarbage()
 	BW_GUARD;
 
 	// GC is not compiled in, clear the import error
-	ScriptModule pGCModule = ScriptModule::import( "gc", ScriptErrorClear() ); 
+	ScriptModule pGCModule = ScriptModule::import( "gc", ScriptErrorClear() );
 
 	// Disable garbage collection
 	if (pGCModule)
@@ -782,13 +805,13 @@ namespace
 /**
  *	This function outputs Python function module's name and function's name
  *  as string in MODULE_NAME.FUNCTION_NAME format for profiling purposes
- *  Function takes PyCallable pointer as an input, it also 
+ *  Function takes PyCallable pointer as an input, it also
  *  From Python point of view a callable is anything that can be called.
  *  - an instance of a class with a __call__ method or
  *  - is of a type that has a non null tp_call (c struct) member which indicates
  *    callability otherwise (such as in functions, methods etc.)
  */
-void resolvePythonModuleAndFunctionNames( PyObject * pFunction, 
+void resolvePythonModuleAndFunctionNames( PyObject * pFunction,
 									   char * outputBuffer, size_t outputBufferSize )
 {
 	const char * moduleName   = NULL;
@@ -885,12 +908,12 @@ void resolvePythonModuleAndFunctionNames( PyObject * pFunction,
  *	assume that the error occurred during the pushing of the parameters onto
  *	the stack, and we clear the error ( e.g. PyObject_GetAttrString( func ) is
  *	used in the parameter list. )
- *	
+ *
  *	@note take care when using this in destructors or in situations where the
  *		error flag has been set as this could clear the error flag.
- *		Eg. If an object's destructor calls Script::ask while a function is 
+ *		Eg. If an object's destructor calls Script::ask while a function is
  *		trying to return with an error.
- *	
+ *
  *	@param pFunction Python function to call.
  *	@param pArgs arguments for the function to be called.
  *	@param errorPrefix what to prefix on any errors that are printed.
@@ -1817,9 +1840,9 @@ int Script::setData( PyObject * pObject, BW::wstring & rString,
 			Py_ssize_t ulen = PyUnicode_GET_DATA_SIZE( unicodeObj ) / sizeof(Py_UNICODE);
 			if (ulen >= 0)
 			{
-				// In theory this is bad, because we're assuming that 
+				// In theory this is bad, because we're assuming that
 				// sizeof(Py_UNICODE) == sizeof(wchar_t), and that ulen maps to
-				// of characters that PyUnicode_AsWideChar will write into the 
+				// of characters that PyUnicode_AsWideChar will write into the
 				// destination buffer. In practice this is true, but for good measure
 				// I'm going to stick in a compile-time assert.
 				BW_STATIC_ASSERT( sizeof(Py_UNICODE) == sizeof(wchar_t), SizeOfPyUnicodeIsNotSizeOfWchar_t );
@@ -1830,7 +1853,7 @@ int Script::setData( PyObject * pObject, BW::wstring & rString,
 					return 0;
 				}
 
-				Py_ssize_t nChars = 
+				Py_ssize_t nChars =
 					PyUnicode_AsWideChar( unicodeObj, &rString[0], ulen );
 
 				if ( nChars != -1 )

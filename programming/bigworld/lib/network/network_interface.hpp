@@ -161,8 +161,8 @@ public:
 	bool isVerbose() const { return verbosityLevel_ > VERBOSITY_LEVEL_QUIET; }
 
 	/** This method returns whether this network interface is extra verbose. */
-	bool isDebugVerbose() const 
-	{ 
+	bool isDebugVerbose() const
+	{
 		return verbosityLevel_ >= VERBOSITY_LEVEL_DEBUG;
 	}
 
@@ -171,15 +171,15 @@ public:
 	 *
 	 *	@see NetworkInterface::verbosityLevel
 	 */
-	void isVerbose( bool value ) 
+	void isVerbose( bool value )
 	{
-		verbosityLevel_ = (value ? 
-			VERBOSITY_LEVEL_DEBUG : 
-			VERBOSITY_LEVEL_QUIET); 
+		verbosityLevel_ = (value ?
+			VERBOSITY_LEVEL_DEBUG :
+			VERBOSITY_LEVEL_QUIET);
 	}
 
 	/** This method returns the verbosity level. */
-	VerbosityLevel verbosityLevel() const { return verbosityLevel_; } 
+	VerbosityLevel verbosityLevel() const { return verbosityLevel_; }
 
 	/** This method sets the verbosity level. */
 	void verbosityLevel( VerbosityLevel value ) { verbosityLevel_ = value; }
@@ -201,7 +201,7 @@ public:
 	void maxSocketProcessingTime( float maxTime );
 
 	// This property is so that data can be associated with a interface. Message
-	// handlers get access to the interface that received the message and can 
+	// handlers get access to the interface that received the message and can
 	// get access to this data. Bots use this so that they know which
 	// ServerConnection should handle the message.
 	void * pExtensionData() const			{ return pExtensionData_; }
@@ -249,7 +249,7 @@ public:
 		rateLimitPerIPAddress_ = limitPerPeriod;
 	}
 
-	uint perIPAddressPortRateLimit() const 
+	uint perIPAddressPortRateLimit() const
 	{
 		return rateLimitPerIPAddressPort_;
 	}
@@ -324,7 +324,7 @@ private:
 	EventDispatcher * pMainDispatcher_;
 
 	InterfaceTable * pInterfaceTable_;
-	
+
 	PacketFilterPtr	pOffChannelFilter_;
 
 	// Must be below dispatcher_ and pInterfaceTable_

@@ -69,9 +69,11 @@ bool AnonymousChannelClient::init( Mercury::NetworkInterface & interface,
 		result = false;
 	}
 
+  INFO_MSG( "[neil]: success findInterface, name: %s, addr: %s\n", componentName, serverAddr.c_str());
+
 	// Everyone talking to another process via this mechanism is doing it
 	// irregularly at the moment.  Could make this optional.
-	pChannelOwner_ = new Mercury::ChannelOwner( interface, serverAddr );
+  pChannelOwner_ = new Mercury::ChannelOwner( interface, serverAddr );
 	pChannelOwner_->channel().isLocalRegular( false );
 	pChannelOwner_->channel().isRemoteRegular( false );
 

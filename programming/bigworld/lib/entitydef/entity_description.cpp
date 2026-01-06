@@ -191,6 +191,7 @@ bool EntityDescription::parse( const BW::string & name,
 		return false;
 	}
 
+  // <Parent>
 	BW::string parentName = pSection->readString( "Parent" );
 
 	if (!parentName.empty())
@@ -212,13 +213,25 @@ bool EntityDescription::parse( const BW::string & name,
 		// class name for the client. If it is not present, it defaults to the
 		// same as the server name.
 
+    // <ClientName>
 		clientName_ = pSection->readString( "ClientName", clientName_ );
 	}
 
 	if (pDistributionDecider)
 	{
+    // <Distribution>
 		EntityDistribution distr( pSection->openSection( "Distribution" ) );
-		
+
+    // 此处会检查 def 文件中是否存在 <Distribution> 段；
+    //   • 如果存在，则使用 <Distribution> 段中关于 <Cell> <Base> <Client> 的定义来初始化下面三个变量；
+    //   • 否则，会查找下面的路径是否存在而决定三个变量的初始化：
+    //     • game/res/fantasydemo/scripts/base/[name_].py
+    //     • game/res/fantasydemo/scripts/cell/[name_].py
+    //     • game/res/fantasydemo/scripts/client/[name_].py
+    //     • game/res/bigworld/scripts/base/[name_].py
+    //     • game/res/bigworld/scripts/cell/[name_].py
+    //     • game/res/bigworld/scripts/client/[name_].py
+    //   • 存在一点特殊的是，三个变量的最终定义会依据 pDistributionDecider 的不同实现而不同；
 		canBeOnCell_ = pDistributionDecider->canBeOnCell( name_, distr );
 		canBeOnBase_ = pDistributionDecider->canBeOnBase( name_, distr );
 		canBeOnClient_ = pDistributionDecider->canBeOnClient( name_, distr );
@@ -238,6 +251,8 @@ bool EntityDescription::parse( const BW::string & name,
 				"support@bigworldtech.com if you would like this feature maintained\n" );
 		}
 	}
+
+	INFO_MSG("[neil] entity_name: %s; on_cell: %d; on_base: %d; on_client: %d; is_service: %d; client_name: %s\n", name_.c_str(), canBeOnCell_, canBeOnBase_, canBeOnClient_, isService_, clientName_.c_str());
 
 	bool result = this->parseInterface( pSection, name_.c_str(),
 			componentName );
@@ -395,11 +410,12 @@ bool EntityDescription::parseInterface( DataSectionPtr pSection,
 	{
 		isPersistent_ = pSection->readBool( "Persistent", isPersistent_ );
 
+    // 内省情况下无定义
 		result &=
 			lodLevels_.addLevels( pSection->openSection( "LoDLevels" ) );
 
 		result &=
-			this->BaseUserDataObjectDescription::parseInterface( pSection, 
+			this->BaseUserDataObjectDescription::parseInterface( pSection,
 				interfaceName, componentName );
 
 		result &=
@@ -468,7 +484,7 @@ bool EntityDescription::parseComponents( DataSectionPtr pComponents,
 		DataSectionPtr pComponent = *itComponent;
 		const BW::string componentType = pComponent->sectionName();
 
-		DataSectionMap::iterator itComponentDef = 
+		DataSectionMap::iterator itComponentDef =
 			componentSections.find(componentType);
 
 		if (componentSections.end() == itComponentDef)
@@ -486,12 +502,12 @@ bool EntityDescription::parseComponents( DataSectionPtr pComponents,
 				return false;
 			}
 
-			itComponentDef = 
+			itComponentDef =
 				componentSections.insert(
 					std::make_pair( componentType, pComponentFile ) ).first;
 		}
 		// optional alias for component
-		const BW::string componentName = 
+		const BW::string componentName =
 			 pComponent->readString("name", componentType, /*flags*/0);
 
 		if (!componentNames_.insert( componentName.c_str() ).second)
@@ -628,7 +644,7 @@ bool EntityDescription::parseProperties( DataSectionPtr pProperties,
 		int index = static_cast<int>(properties_.size());
 		int clientServerIndex = -1;
 
-		PropertyMap & propertyMap 
+		PropertyMap & propertyMap
 				= this->getComponentProperties( componentName.c_str() );
 		PropertyMap::const_iterator propIter =
 				propertyMap.find( dataDescription.name().c_str() );
@@ -643,7 +659,7 @@ bool EntityDescription::parseProperties( DataSectionPtr pProperties,
 			index = propIter->second;
 			if (dataDescription.isClientServerData())
 			{
-				clientServerIndex = 
+				clientServerIndex =
 					properties_[ index ].clientServerFullIndex();
 			}
 		}
@@ -695,7 +711,7 @@ bool EntityDescription::parseProperties( DataSectionPtr pProperties,
 				propertiesOk = false;
 			}
 
-		}
+    }
 
 		if (dataDescription.isOtherClientData())
 		{
@@ -1185,7 +1201,7 @@ public:
 		if (!dataDesc.isCorrectType( pValue ))
 		{
 			ERROR_MSG( "EntityDescription::addToStream(%s): "
-					"Data for %s (%s) is wrong type (%s)\n", 
+					"Data for %s (%s) is wrong type (%s)\n",
 				entityDescription_.name().c_str(),
 				dataDesc.name().c_str(),
 				dataDesc.dataType()->typeName().c_str(),
@@ -1202,7 +1218,7 @@ public:
 				ERROR_MSG( "EntityDescription::addToStream(%s): "
 						"Failed to write property %s (%s) to stream\n",
 					entityDescription_.name().c_str(),
-					dataDesc.name().c_str(), 
+					dataDesc.name().c_str(),
 					dataDesc.dataType()->typeName().c_str() );
 				result = false;
 			}
@@ -1228,7 +1244,7 @@ class AddToStreamSectionVisitor : public AddToStreamVisitor
 {
 public:
 	AddToStreamSectionVisitor( const EntityDescription & entityDescription,
-			DataSection * pSection ) : 
+			DataSection * pSection ) :
 		AddToStreamVisitor( entityDescription ),
 		pSection_( pSection )
 	{}
@@ -1291,7 +1307,7 @@ class AddToStreamAttributeVisitor : public AddToStreamVisitor
 {
 public:
 	AddToStreamAttributeVisitor( const EntityDescription & entityDescription,
-			const ScriptObject & object ) : 
+			const ScriptObject & object ) :
 		AddToStreamVisitor( entityDescription ),
 		object_( object )
 	{
@@ -1689,7 +1705,7 @@ bool EntityDescription::readStreamToSection( BinaryIStream & stream,
 
 			if (pCurr)
 			{
-				if (!dataDesc.fromStreamToSection( stream_, pCurr, 
+				if (!dataDesc.fromStreamToSection( stream_, pCurr,
 						onlyPersistent_ ))
 				{
 					ERROR_MSG( "EntityDescription::readStreamToSection(%s): "
@@ -1903,14 +1919,14 @@ WatcherPtr EntityDescription::pWatcher()
 	{
 		watchMe = new DirectoryWatcher();
 		EntityDescription *pNull = NULL;
-		watchMe->addChild( "cellMethods", 
-						   EntityMethodDescriptions::pWatcher(), 
+		watchMe->addChild( "cellMethods",
+						   EntityMethodDescriptions::pWatcher(),
 						   &pNull->cell_ );
-		watchMe->addChild( "baseMethods", 
-						   EntityMethodDescriptions::pWatcher(), 
+		watchMe->addChild( "baseMethods",
+						   EntityMethodDescriptions::pWatcher(),
 						   &pNull->base_ );
-		watchMe->addChild( "clientMethods", 
-						   EntityMethodDescriptions::pWatcher(), 
+		watchMe->addChild( "clientMethods",
+						   EntityMethodDescriptions::pWatcher(),
 						   &pNull->client_ );
 	}
 

@@ -181,8 +181,8 @@ public:
 	bool isOwnedByInterface() const
 		{ return !isDestroyed_ && (isAnonymous_ || isCondemned_); }
 
-	bool hasUnackedCriticals() const 
-	{ 
+	bool hasUnackedCriticals() const
+	{
 		return unackedCriticalSeq_ != SEQ_NULL;
 	}
 
@@ -197,9 +197,9 @@ public:
 	bool isExternal() const { return traits_ == EXTERNAL; }
 	bool isInternal() const { return traits_ == INTERNAL; }
 
-	bool shouldAutoSwitchToSrcAddr() const 
-	{ 
-		return shouldAutoSwitchToSrcAddr_; 
+	bool shouldAutoSwitchToSrcAddr() const
+	{
+		return shouldAutoSwitchToSrcAddr_;
 	}
 
 	void shouldAutoSwitchToSrcAddr( bool b );
@@ -244,8 +244,8 @@ public:
 	static float sendWindowCallbackThreshold();
 	static void sendWindowCallbackThreshold( float threshold );
 
-	unsigned int pushUnsentAcksThreshold() const 
-	{ 
+	unsigned int pushUnsentAcksThreshold() const
+	{
 		return pushUnsentAcksThreshold_;
 	}
 
@@ -354,8 +354,8 @@ private:
 	void clearState( bool warnOnDiscard = false );
 
 	UDPBundle & udpBundle() { return static_cast< UDPBundle & >( *pBundle_ ); }
-	const UDPBundle & udpBundle() const 
-	{ 
+	const UDPBundle & udpBundle() const
+	{
 		return static_cast< const UDPBundle & >( *pBundle_ );
 	}
 
@@ -383,10 +383,10 @@ private:
 	uint32			windowSize_;
 
 	/// Generally, the sequence number of the next packet to be sent.
-	SeqNum			smallOutSeqAt_; // This does not include packets in 
+	SeqNum			smallOutSeqAt_; // This does not include packets in
 									// overflowPackets_
 
-	SeqNumAllocator	largeOutSeqAt_; // This does include packets in 
+	SeqNumAllocator	largeOutSeqAt_; // This does include packets in
 									// overflowPackets_
 
 	/// The sequence number of the oldest unacked packet on this channel.
@@ -489,7 +489,7 @@ private:
 	SeqNum			unackedCriticalSeq_;
 
 	/// If non-zero and the number of ACKs on this channel's bundle exceeds
-	/// this number, the bundle will be sent automatically, regardless of 
+	/// this number, the bundle will be sent automatically, regardless of
 	/// whether or not this channel is regular.
 	unsigned int	pushUnsentAcksThreshold_;
 

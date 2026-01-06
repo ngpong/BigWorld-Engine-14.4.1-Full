@@ -58,9 +58,9 @@ public:
 		int timeout = DEFAULT_REQUEST_TIMEOUT,
 		ReliableType reliable = RELIABLE_DRIVER );
 
-	virtual void startReply( ReplyID id, 
+	virtual void startReply( ReplyID id,
 		ReliableType reliable = RELIABLE_DRIVER );
-	
+
 	virtual void clear( bool newBundle = false );
 
 	virtual int freeBytesInLastDataUnit() const;
@@ -74,7 +74,7 @@ public:
 	virtual void addBlob( const void * pBlob, int size );
 
 	// Own methods
-	
+
 	bool isEmpty() const;
 
 	int size() const;
@@ -106,8 +106,8 @@ public:
 		SendingStats & sendingStats,
 		bool shouldUseChecksums );
 
-	int addAck( SeqNum seq ) 
-	{ 
+	int addAck( SeqNum seq )
+	{
 		MF_ASSERT( ack_ == SEQ_NULL );
 		ack_ = seq;
 		return true;
@@ -132,9 +132,9 @@ private:
 
 	UDPChannel & udpChannel();
 
-	const UDPChannel & udpChannel() const 
-	{ 
-		return const_cast< UDPBundle * >( this )->udpChannel(); 
+	const UDPChannel & udpChannel() const
+	{
+		return const_cast< UDPBundle * >( this )->udpChannel();
 	}
 
 	UDPBundle( const UDPBundle & );

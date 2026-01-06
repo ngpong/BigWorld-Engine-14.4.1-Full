@@ -212,11 +212,11 @@ void ServerFinder::onMessage( const ProcessMessage & msg,
 
 
 /**
- *	This method is called when the server discovery process has completed. 
+ *	This method is called when the server discovery process has completed.
  *
  *	The default behaviour is to delete itself. Subclasses should override this
- *	method to either do additional teardown or, if desired, prevent the 
- *	deletion. 
+ *	method to either do additional teardown or, if desired, prevent the
+ *	deletion.
  */
 void ServerFinder::onFinished()
 {
@@ -271,11 +271,11 @@ void ServerProbeHandler::handleException( const Mercury::NubException & e,
 
 
 /**
- *	This method is called when the server probe has finished. 
+ *	This method is called when the server probe has finished.
  *
  *	The default behaviour is to delete itself. Subclasses should override this
- *	method to either do additional teardown or, if desired, prevent the 
- *	deletion. 
+ *	method to either do additional teardown or, if desired, prevent the
+ *	deletion.
  */
 void ServerProbeHandler::onFinished()
 {

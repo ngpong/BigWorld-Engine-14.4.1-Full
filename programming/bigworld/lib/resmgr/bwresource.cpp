@@ -79,7 +79,7 @@ typedef BW::vector<BW::string> STRINGVECTOR;
 
 
 /**
- *  This local class contains the private implementation details for the 
+ *  This local class contains the private implementation details for the
  *  BWResource class.
  */
 class BWResourceImpl
@@ -91,7 +91,7 @@ public:
 		nativeFileSystem_( NULL ),
 		paths_(),
 		defaultDrive_()
-#if ENABLE_FILE_CASE_CHECKING		
+#if ENABLE_FILE_CASE_CHECKING
 		,checkCase_( false )
 #endif // ENABLE_FILE_CASE_CHECKING
 #ifdef _WIN32
@@ -131,7 +131,7 @@ public:
 	static bool					hasDriveInPath( const BW::StringRef& path );
 	static bool					pathIsRelative( const BW::StringRef& path );
 
-	static BW::string			formatSearchPath( const BW::StringRef& path, 
+	static BW::string			formatSearchPath( const BW::StringRef& path,
 		const BW::StringRef& pathXml = "" );
 
 #ifdef _WIN32
@@ -145,7 +145,7 @@ public:
 	static const BW::string	getUserPicturesDirectory();
 
 	// Version info (VS_VERSION_INFO) access methods
-	const BW::string			getAppVersionString( 
+	const BW::string			getAppVersionString(
 		const BW::string & stringName );
 	void						getAppVersionData();
 	const BW::string			getAppVersionLanguage();
@@ -155,7 +155,7 @@ public:
 	void addModificationListener( ResourceModificationListener* listener );
 	void removeModificationListener( ResourceModificationListener* listener );
 	void flushModificationMonitor();
-	bool ignoreFileModification( const BW::string& fileName, 
+	bool ignoreFileModification( const BW::string& fileName,
 			ResourceModificationListener::Action action,
 			bool oneTimeOnly );
 	bool hasPendingModification( const BW::string& fileName );
@@ -421,8 +421,8 @@ void BWResourceImpl::addModificationListener(
 {
 	BW_GUARD;
 	SimpleMutexHolder smh( modificationListenersMutex_ );
-	if (std::find( modificationListeners_.begin(), 
-			modificationListeners_.end(), 
+	if (std::find( modificationListeners_.begin(),
+			modificationListeners_.end(),
 			listener ) == modificationListeners_.end())
 	{
 		modificationListeners_.push_back( listener );
@@ -448,8 +448,8 @@ void BWResourceImpl::removeModificationListener(
 				listener );
 	}
 
-	// The resource modification implementation currently relies upon some 
-	// win32 code. Since server does not support any reloading anyway, 
+	// The resource modification implementation currently relies upon some
+	// win32 code. Since server does not support any reloading anyway,
 	// disable the calls into the implementation.
 #if defined( _WIN32 )
 	if (listener)
@@ -469,7 +469,7 @@ void BWResourceImpl::flushModificationMonitor()
 }
 
 
-bool BWResourceImpl::ignoreFileModification( const BW::string& fileName, 
+bool BWResourceImpl::ignoreFileModification( const BW::string& fileName,
 							ResourceModificationListener::Action action,
 							bool oneTimeOnly )
 {
@@ -492,7 +492,7 @@ bool BWResourceImpl::hasPendingModification( const BW::string& fileName )
 /**
  *	Constructor
  */
-BWResource::BWResource(): 
+BWResource::BWResource():
 		Singleton< BWResource >()
 {
 	BW_GUARD;
@@ -622,7 +622,7 @@ DataSectionPtr BWResource::openSection( const BW::StringRef & resourceID,
 
 	if (pExisting) return pExisting;
 
-	return instance().rootSection()->openSection( resourceID, 
+	return instance().rootSection()->openSection( resourceID,
 										makeNewSection, creator );
 }
 
@@ -747,7 +747,7 @@ HRESULT getWindowsPath( int cisdl, BW::string& out )
 	HRESULT result= SHGetFolderPath( NULL, cisdl, NULL,
 								SHGFP_TYPE_CURRENT, wappDataPath );
 	if( SUCCEEDED( result ) )
-	{	
+	{
 		bw_wtoutf8( wappDataPath, out );
 		std::replace( out.begin(), out.end(), '\\', '/' );
 		out += "/";
@@ -774,7 +774,7 @@ HRESULT getWindowsPath( int cisdl, BW::string& out )
 	BW::string ret;
 	HRESULT result = getWindowsPath( flags, ret );
 	if (FAILED(result))
-	{	
+	{
 		WARNING_MSG( "BWResourceImpl::getAppDataDirectory: Couldn't locate "
 			"application data directory: 0x%08lx\n", result );
 	}
@@ -788,7 +788,7 @@ HRESULT getWindowsPath( int cisdl, BW::string& out )
 	BW::string ret;
 	HRESULT result = getWindowsPath( CSIDL_MYDOCUMENTS|CSIDL_FLAG_CREATE, ret );
 	if (FAILED(result))
-	{	
+	{
 		WARNING_MSG( "BWResourceImpl::userDocumentsDirectory: Couldn't locate "
 			"My Documents: 0x%08lx\n", result );
 	}
@@ -801,7 +801,7 @@ HRESULT getWindowsPath( int cisdl, BW::string& out )
 	BW::string ret;
 	HRESULT result = getWindowsPath( CSIDL_MYPICTURES|CSIDL_FLAG_CREATE, ret );
 	if (FAILED(result))
-	{	
+	{
 		WARNING_MSG( "BWResourceImpl::getUserPicturesDirectory: Couldn't locate "
 			"My Pictures: 0x%08lx\n", result );
 	}
@@ -1451,7 +1451,7 @@ bool BWResource::validPath( const BW::StringRef& file )
 		return file[0] != ':' && file[0] != '/' && file[0] != '\\';
 
 	bool hasDriveName = (file[1] == ':');
-	bool hasNetworkName = (file[0] == '/' && file[1] == '/') || 
+	bool hasNetworkName = (file[0] == '/' && file[1] == '/') ||
 						  (file[0] == '\\' && file[1] == '\\');
 
 	return !(hasDriveName || hasNetworkName);
@@ -1485,7 +1485,7 @@ void BWResource::defaultDrive( const BW::StringRef& drive )
 /**
  *	This enables/disables checking of filename case.
  *
- *	@param enable	If true then the case of filenames are checked as used.  
+ *	@param enable	If true then the case of filenames are checked as used.
  *					This is useful to check for problems with files used on
  *					both Windows and Linux, but comes at a cost in execution
  *					speed.
@@ -1501,7 +1501,7 @@ void BWResource::checkCaseOfPaths(bool enable)
 /**
  *	This gets whether checking of filename's case is disabled or enabled.
  *
- *	@return			True if filename case checking is enabled, false if it's 
+ *	@return			True if filename case checking is enabled, false if it's
  *					disabled.
  */
 bool BWResource::checkCaseOfPaths()
@@ -1532,7 +1532,7 @@ BW::string BWResource::correctCaseOfPath(BW::StringRef const &path)
  *
  *	@param pathname	The relative path name - relative to the rest paths.
  *	@param pFI		The file info structure used to retrive the information of
- *					the file. Set to NULL will 
+ *					the file. Set to NULL will
  *
  *	@return			The type of input file
  */
@@ -1687,7 +1687,7 @@ BW::StringRef BWResource::getExtension( const BW::StringRef& file )
 {
 	BW_GUARD;
 	BW::StringRef::size_type pos = file.find_last_of( "." );
-	BW::StringRef::size_type fileNamePos = 
+	BW::StringRef::size_type fileNamePos =
 		std::min( file.find_last_of( '/' ), file.find_last_of( '\\' ) );
 	if( pos != BW::StringRef::npos &&
 		(fileNamePos == BW::StringRef::npos || pos > fileNamePos) )
@@ -1711,7 +1711,7 @@ BW::StringRef BWResource::removeExtension( const BW::StringRef& file )
 {
 	BW_GUARD;
 	BW::StringRef::size_type pos = file.find_last_of( "." );
-	BW::StringRef::size_type fileNamePos = 
+	BW::StringRef::size_type fileNamePos =
 		std::min( file.find_last_of( '/' ), file.find_last_of( '\\' ) );
 	if( pos != BW::StringRef::npos &&
 		(fileNamePos == BW::StringRef::npos || pos > fileNamePos) )
@@ -1766,7 +1766,7 @@ BW::string BWResource::getCurrentDirectory()
 #ifdef _WIN32
 	// get the working directory
 	wchar_t wbuffer[MAX_PATH];
-	GetCurrentDirectory( ARRAY_SIZE( wbuffer ), wbuffer ); 	 
+	GetCurrentDirectory( ARRAY_SIZE( wbuffer ), wbuffer );
 
 	BW::string dir = bw_wtoutf8( wbuffer );
 	dir.append( "/" );
@@ -1959,9 +1959,9 @@ bool BWResource::ensureAbsolutePathExists( const BW::StringRef& path )
 		BW::string subpath = nPath.substr( 0, poff );
 #ifdef _WIN32
 
-		BW::wstring wsubpath = bw_utf8tow( subpath ); 
-		if (!CreateDirectory( wsubpath.c_str(), NULL ) && 
-			GetLastError() != ERROR_ALREADY_EXISTS) 
+		BW::wstring wsubpath = bw_utf8tow( subpath );
+		if (!CreateDirectory( wsubpath.c_str(), NULL ) &&
+			GetLastError() != ERROR_ALREADY_EXISTS)
 #else
 		if( mkdir( subpath.c_str(), 0 ) == -1 && errno == ENOENT)
 #endif // _WIN32
@@ -2332,7 +2332,7 @@ uint64 BWResource::modifiedTime( const BW::StringRef & fileOrResource )
 }
 
 /**
- *	Walks up through the resource tree specified by path, looking for the 
+ *	Walks up through the resource tree specified by path, looking for the
  *	given desiredSection, starting at the leaf. Returns the open DataSection
  *	if it was found, otherwise returns NULL.
  *
@@ -2340,7 +2340,7 @@ uint64 BWResource::modifiedTime( const BW::StringRef & fileOrResource )
  *	@param desiredSection The name of the section to find
  *	@return	DataSectionPtr The open DataSection, if the desiredSection was found
  */
-/*static*/ DataSectionPtr BWResource::openSectionInTree( const BW::StringRef& path, 
+/*static*/ DataSectionPtr BWResource::openSectionInTree( const BW::StringRef& path,
 														const BW::StringRef& desiredSection )
 {
 	BW_GUARD;
@@ -2384,20 +2384,20 @@ uint64 BWResource::modifiedTime( const BW::StringRef & fileOrResource )
 /**
  *	Resolves the given path to an absolute path. Loops through each filesystem
  * 	and resolves the path to the first one that contains the file.
- * 
- * 	If the path is already an absolute path (i.e. it starts with a slash or 
+ *
+ * 	If the path is already an absolute path (i.e. it starts with a slash or
  * 	drive letter), it simply returns the type of the file.
- * 
- * 	To resolve the path to a full path without checking for the existence of 
+ *
+ * 	To resolve the path to a full path without checking for the existence of
  * 	the file, see MultiFileSystem::getAbsolutePath().
- * 
+ *
  * 	@param	path	Input: The path to resolve.
  * 					Output: The resolved path. Does not
  * 			resolve the path if path does not exist in any file systems.
- * 
- * 	@return	The type of the file. 
+ *
+ * 	@return	The type of the file.
  */
-IFileSystem::FileType BWResource::resolveToAbsolutePath( 
+IFileSystem::FileType BWResource::resolveToAbsolutePath(
 		BW::string& path )
 {
 	BW_GUARD;
@@ -2412,7 +2412,7 @@ IFileSystem::FileType BWResource::resolveToAbsolutePath(
 	}
 
 	// Ensure that it ends with a path separator if it is a directory
-	if (type == IFileSystem::FT_DIRECTORY && (path.rbegin() != path.rend()) && 
+	if (type == IFileSystem::FT_DIRECTORY && (path.rbegin() != path.rend()) &&
 			(*path.rbegin() != PATH_SEPARATOR))
 	{
 		path += PATH_SEPARATOR;
@@ -2424,20 +2424,20 @@ IFileSystem::FileType BWResource::resolveToAbsolutePath(
 /**
  *	Resolves the given path to an absolute path. Loops through each filesystem
  * 	and resolves the path to the first one that contains the file.
- * 
- * 	If the path is already an absolute path (i.e. it starts with a slash or 
+ *
+ * 	If the path is already an absolute path (i.e. it starts with a slash or
  * 	drive letter), it simply returns the type of the file.
- * 
- * 	To resolve the path to a full path without checking for the existence of 
+ *
+ * 	To resolve the path to a full path without checking for the existence of
  * 	the file, see MultiFileSystem::getAbsolutePath().
- * 
+ *
  * 	@param	path	Input: The path to resolve.
  * 					Output: The resolved path. Does not
  * 			resolve the path if path does not exist in any file systems.
- * 
- * 	@return	The type of the file. 
+ *
+ * 	@return	The type of the file.
  */
-IFileSystem::FileType BWResource::resolveToAbsolutePath( 
+IFileSystem::FileType BWResource::resolveToAbsolutePath(
 		BW::wstring& path )
 {
 	BW::string utf8;
@@ -2569,7 +2569,7 @@ void BWResource::enableModificationMonitor( bool enable )
 	instance().pimpl_->enableModificationMonitor( enable );
 }
 
-void BWResource::addModificationListener( 
+void BWResource::addModificationListener(
 	ResourceModificationListener* listener )
 {
 	BW_GUARD;
@@ -2590,7 +2590,7 @@ void BWResource::flushModificationMonitor()
 }
 
 
-bool BWResource::ignoreFileModification( const BW::string& fileName, 
+bool BWResource::ignoreFileModification( const BW::string& fileName,
 						ResourceModificationListener::Action action,
 						bool oneTimeOnly )
 {
@@ -2609,7 +2609,7 @@ bool BWResource::hasPendingModification( const BW::string& fileName )
 /**
  *	return the path by index,
  * 	@param	path	Output: The path to return.
- * 
+ *
  * 	@return	success or not
  */
 bool BWResource::path( size_t idx, char* pathRet, size_t maxPath )
@@ -2628,7 +2628,7 @@ bool BWResource::path( size_t idx, char* pathRet, size_t maxPath )
 /**
  *	return the path by index,
  * 	@param	path	Output: The path to return.
- * 
+ *
  * 	@return	success or not
  */
 bool BWResource::path( size_t idx, wchar_t* pathRet, size_t maxPath )

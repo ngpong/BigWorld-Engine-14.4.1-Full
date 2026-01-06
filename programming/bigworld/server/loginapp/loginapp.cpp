@@ -114,17 +114,33 @@ uint16 getExternalPort()
 /**
  *	Constructor.
  */
+
+// LoginApp::LoginApp(mainDispatcher, intInterface) → {@LA}
+// │                      ↓               ↓
+// │                   {@MDP}          {@IIF}
+// ╰╴initializer_list:
+//   ├╴extInterface_(mainDispatcher, networkInterfaceType, listeningPort, listeningInterface) → {@LA.@EIF}
+//   │ │                    ↓               │                    │                ↓
+//   │ │                 {@MDP}             │                    ↓               {""}
+//   │ │                                    │       {20013: loginApp/externalPorts}
+//   │ │                                    ↓
+//   │ │                    {Mercury::NETWORK_INTERFACE_EXTERNAL}
+//   │ ├╴initializer_list:
+//   │
+//   ╰╴tcpServer_
 LoginApp::LoginApp( Mercury::EventDispatcher & mainDispatcher,
-		Mercury::NetworkInterface & intInterface ) :
-	ServerApp( mainDispatcher, intInterface ),
-	pLogOnParamsEncoder_( NULL ),
-	extInterface_( &mainDispatcher,
-			Mercury::NETWORK_INTERFACE_EXTERNAL,
-			getExternalPort(),
-			Config::externalInterface().c_str() ),
-	pStreamFilterFactory_( BWConfig::get( "shouldUseWebSockets", true ) ?
-		new LoginStreamFilterFactory : NULL ),
-	tcpServer_( extInterface_, Config::tcpServerBacklog() ),
+    Mercury::NetworkInterface & intInterface ) :
+  ServerApp( mainDispatcher, intInterface ),
+  pLogOnParamsEncoder_( NULL ),
+  // 创建外部接口
+  // 绑定 20013 的 udp 接口
+  extInterface_( &mainDispatcher,
+      Mercury::NETWORK_INTERFACE_EXTERNAL,
+      getExternalPort(),
+      Config::externalInterface().c_str() ),
+  pStreamFilterFactory_( BWConfig::get( "shouldUseWebSockets", true ) ?
+    new LoginStreamFilterFactory : NULL ),
+  tcpServer_( extInterface_, Config::tcpServerBacklog() ),
 	systemOverloaded_( 0 ),
 	systemOverloadedTime_( 0 ),
 	loginRequests_(),
@@ -142,6 +158,7 @@ LoginApp::LoginApp( Mercury::EventDispatcher & mainDispatcher,
 {
 	extInterface_.pExtensionData( static_cast< ServerApp * >( this ) );
 
+  // 内省情况下为空
 	BW::string extInterfaceConfig = Config::externalInterface();
 	// TODO: this code is duplicated from BaseApp (see r124025).
 	//       Make it a common function.
@@ -153,6 +170,7 @@ LoginApp::LoginApp( Mercury::EventDispatcher & mainDispatcher,
 		pPorts->readInts( "port", externalPorts );
 	}
 
+  // 绑定 20013 的 tcp 接口
 	bool didBind = this->bindToPrescribedPort( extInterface_, tcpServer_,
 			extInterfaceConfig, externalPorts );
 
@@ -222,7 +240,7 @@ bool LoginApp::init( int argc, char * argv[] ) /* override */
 
 	if ((extInterface_.address().ip == 0) ||
 			(this->intInterface().address().ip == 0))
-	{
+  {
 		ERROR_MSG( "LoginApp::init: Failed to open UDP ports. "
 				"Maybe another process already owns it\n" );
 		return false;
@@ -267,6 +285,8 @@ bool LoginApp::init( int argc, char * argv[] ) /* override */
 
 	// ---- What used to be in loginsvr.cpp
 
+  // 控制进程存活监控？
+  // 该函数应该需要依赖于 reviver 进程的启动，暂时跳过这个部分
 	ReviverSubject::instance().init( &this->intInterface(), "loginApp" );
 
 	// make sure the interface came up ok
@@ -279,13 +299,42 @@ bool LoginApp::init( int argc, char * argv[] ) /* override */
 		return false;
 	}
 
+  // 192.168.31.250:20013
 	PROC_IP_INFO_MSG( "External address = %s\n",
 		extInterface_.address().c_str() );
+  // 192.168.31.250:ephemeral-port
 	PROC_IP_INFO_MSG( "Internal address = %s\n",
 		this->intInterface().address().c_str() );
 
 	int numStartupRetries = Config::numStartupRetries();
 
+  // 向 bwmachined 发送 MachineGuardMessage::LISTENER_MESSAGE 注册名为 "DBAppMgrInterface" 网络接口的监听事件
+  // ；该事件主要是跟网络接口的创建与注销相关的回调；
+  //
+  // 监听消息的消息结构为 ListenerMessage；此消息内包含字段 param_ 用于指示注册类型，仅当为 ADD_BIRTH_LISTENER
+  // 时，则注册网络接口的创建事件，反之亦然；
+  //
+  // 所注册的网络接口的创建/注销的回调，将会在 ProcessMessage::REGISTER 消息处理时被调用；在调用时，会通过广播
+  // 20018 端口来发送 ProcessMessage::NOTIFY_BIRTH/ProcessMessage::NOTIFY_DEATH；在普通只存在一个 bwmachined2
+  // 的情况下该消息最终还是会回环到本机；
+  //
+  // ProcessMessage::REGISTER 消息在不同服务上的调用点都不同，关注 LoginIntInterface::registerWithMachined 代
+  // 码的调用位置；
+  //
+  // 此函数在发送完毕监听消息后，还会向 bwmachined 中发送 MachineGuardMessage::PROCESS_STATS_MESSAGE 消息查询
+  // 检测名为 "DBAppMgrInterface" 的网络接口是否已被注册；注册，即对应服务是否已经发送了 ProcessMessage::REGISTER；
+  //
+  // 注意的是，该消息函数并不会一次消息就会查找成功，具体成功要看对应服务（dpmgrapp ）那边是否已经完成了向 bwmachined 的
+  // 注册工作；
+  //
+  // 查询消息最终会返回对应服务所暴露网络接口的地址与端口号；最终会使用这个地址创建一个管道 dbAppMgr_.pChannelOwner_(ChannelOwner)；该管道应该
+  // 属于是网络接口的另一层抽象的体现？
+  //
+  // dbAppMgr_.init(this->intInterface(),
+  //                LoginIntInterface::gMinder,
+  //                LoginIntInterface::DBAppMgrInterfaceBirth,
+  //                "DBAppMgrInterface",
+  //                numStartupRetries)
 	if (!BW_INIT_ANONYMOUS_CHANNEL_CLIENT( dbAppMgr_, this->intInterface(),
 			LoginIntInterface, DBAppMgrInterface, numStartupRetries ))
 	{
@@ -293,6 +342,7 @@ bool LoginApp::init( int argc, char * argv[] ) /* override */
 		return false;
 	}
 
+  // 下面的两个函数，会将接口文件中涉及到 gMinder.add 的部分都注册到 network-interface 的 pInterfaceTable_ 里面
 	LoginInterface::registerWithInterface( extInterface_ );
 	LoginIntInterface::registerWithInterface( this->intInterface() );
 
@@ -334,6 +384,17 @@ bool LoginApp::init( int argc, char * argv[] ) /* override */
 	extInterface_.perIPAddressRateLimit( Config::ipAddressRateLimit() );
 	extInterface_.perIPAddressPortRateLimit( Config::ipAddressPortRateLimit() );
 
+  // 此处构造函数的内部逻辑存在一次 RPC 调用；具体的，它调用了 DBAppMgr 中暴露的远程接
+  // 口 DBAppMgrInterface::addLoginApp，并在 DBAppMgr 回复该消息后调用了本地的 AddToD-
+  // BAppMgrHelper::finishInit
+  //
+  // 简单阐述下 RPC 的逻辑；首先，RPC 接口的定义通过 xxxxx_interface.hpp 文件中的宏来完
+  // 成。如果想将接口暴露在网络中（外部还是内部由传递的 NetworkInterface 类型决定），则
+  // 需要调用相应的 registerWithInterface 来完成
+  //
+  // 一般的调用约定，需要通过 channel 中的 bundle，通过 startRequest 准备数据（使用不同
+  // 的宏注册的消息调用方式不同），然后在通过 send 来完成调用
+  //
 	// This calls back on finishInit().
 	new AddToDBAppMgrHelper( *this );
 
@@ -343,7 +404,7 @@ bool LoginApp::init( int argc, char * argv[] ) /* override */
 		return false;
 	}
 
-	if (!Config::challengeType().empty() && 
+	if (!Config::challengeType().empty() &&
 			!challengeFactories_.getFactory( Config::challengeType() ))
 	{
 		CONFIG_ERROR_MSG( "LoginApp::init: "
@@ -463,7 +524,7 @@ bool LoginApp::finishInit( LoginAppID appID,
 	root.addChild( "averages", pStatsWatcher );
 
 	WatcherPtr pChallengeStatWatcher = new DirectoryWatcher();
-	
+
 	pChallengeStatWatcher->addChild( "calculationTime",
 			makeWatcher( loginStats_,
 				&LoginStats::challengeCalculationAverage ) );
@@ -486,6 +547,7 @@ bool LoginApp::finishInit( LoginAppID appID,
 		mainDispatcher_.addTimer( UPDATE_STATS_PERIOD, &loginStats_, NULL,
 		"UpdateStats" );
 
+  // 此处启动每秒一次 tick 的计时器调用 this->advanceTime()，应该是用于更新游戏时间的
 	tickTimer_ = mainDispatcher_.addTimer(
 					1000000/Config::updateHertz(),
 					this, (void *)TIMEOUT_TICK,
@@ -544,7 +606,7 @@ bool LoginApp::initLogOnParamsEncoder()
 	BinaryPtr pBinData = pSection->asBinary();
 	BW::string keyString( pBinData->cdata(), pBinData->len() );
 
-	RSAStreamEncoder * pEncoder = 
+	RSAStreamEncoder * pEncoder =
 		new RSAStreamEncoder( /* keyIsPrivate: */ true );
 
 	if (!pEncoder->initFromKeyString( keyString ))
@@ -553,7 +615,7 @@ bool LoginApp::initLogOnParamsEncoder()
 		return shouldSucceedOnKeyLoadFailure;
 	}
 
-	pLogOnParamsEncoder_.reset( pEncoder ); 
+	pLogOnParamsEncoder_.reset( pEncoder );
 
 	return true;
 }
@@ -586,7 +648,7 @@ void LoginApp::onRunComplete() /* override */
 
 
 /**
- *	This method updates counters and 
+ *	This method updates counters and
  *  sends a failure message back to the client.
  */
 void LoginApp::handleFailure( const Mercury::Address & addr,
@@ -603,7 +665,7 @@ void LoginApp::handleFailure( const Mercury::Address & addr,
 		loginStats_.incFails();
 	}
 	++gNumLoginFailures;
-	
+
 	// Reset replies counter each interval (0.5 sec).
 	if (repliedFailsCounterResetTime_ <= timestamp())
 	{
@@ -986,7 +1048,7 @@ void LoginApp::login( const Mercury::Address & source,
 			LogOnStatus::LogOnStatus::LOGIN_MALFORMED_REQUEST );
 		return;
 	}
-	
+
 	if (Config::passwordlessLoginsOnly() && !pParams->password().empty())
 	{
 		if (Config::verboseLoginFailures())
@@ -1195,7 +1257,7 @@ void LoginApp::challengeResponse( const Mercury::Address & source,
 
 	if (!request.pLoginChallenge())
 	{
-		// Challenge response already verified, this is a re-send, let 
+		// Challenge response already verified, this is a re-send, let
 		// login message handler re-send cached result.
 		data.finish();
 		return;
@@ -1291,7 +1353,7 @@ void LoginApp::sendSuccess( const Mercury::Address & addr,
 	MemoryOStream data;
 
 	data << (int8)LogOnStatus::LOGGED_ON;
-	
+
 	const BW::string & encryptionKey = request.pParams()->encryptionKey();
 
 	if (!encryptionKey.empty())
@@ -1299,7 +1361,7 @@ void LoginApp::sendSuccess( const Mercury::Address & addr,
 		// We have to encrypt the reply record because it contains the session
 		// key
 		Mercury::EncryptionFilterPtr pFilter =
-			Mercury::EncryptionFilter::create( 
+			Mercury::EncryptionFilter::create(
 				Mercury::SymmetricBlockCipher::create( encryptionKey ) );
 		MemoryOStream clearText;
 		request.writeSuccessResultToStream( clearText );
@@ -1372,7 +1434,7 @@ void LoginApp::sendRawReply( const Mercury::Address & addr,
 	if (pBundle->numDataUnits() > WARN_BUNDLE_PACKETS)
 	{
 		NETWORK_WARNING_MSG( "LoginApp::sendRawReply: "
-				"Sent reply with size larger than %d > %d packets.\n", 
+				"Sent reply with size larger than %d > %d packets.\n",
 			pBundle->numDataUnits(), WARN_BUNDLE_PACKETS );
 	}
 
@@ -1562,7 +1624,7 @@ const float LoginApp::LoginStats::COUNT_BIAS = 2.f /
 /**
  *	The EMA bias for the challenge calculation and verification time averages.
  */
-const float LoginApp::LoginStats::TIME_BIAS = 
+const float LoginApp::LoginStats::TIME_BIAS =
 	EMA::calculateBiasFromNumSamples( 100 );
 
 

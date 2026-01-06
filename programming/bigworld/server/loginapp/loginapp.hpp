@@ -89,7 +89,7 @@ public:
 		const char * msg = NULL, LogOnParamsPtr pParams = NULL );
 
 	void sendAndCacheSuccess( const Mercury::Address & addr,
-			Mercury::Channel * pChannel, Mercury::ReplyID replyID, 
+			Mercury::Channel * pChannel, Mercury::ReplyID replyID,
 			const LoginReplyRecord & replyRecord,
 			const BW::string & serverMsg, LogOnParamsPtr pParams );
 
@@ -120,7 +120,7 @@ public:
 	}
 
 	void controlledShutDown();
-	
+
 	void clearIPAddressBans();
 
 	uint8 systemOverloaded() const
@@ -170,7 +170,7 @@ private:
 
 	std::auto_ptr< StreamEncoder > 	pLogOnParamsEncoder_;
 	Mercury::NetworkInterface		extInterface_;
-	std::auto_ptr< Mercury::StreamFilterFactory > 
+	std::auto_ptr< Mercury::StreamFilterFactory >
 									pStreamFilterFactory_;
 	Mercury::TCPServer 				tcpServer_;
 
@@ -311,7 +311,7 @@ private:
 		 *	results.
 		 */
 		float challengeCalculationAverage() const
-		{ 
+		{
 			return calculationTime_.average();
 		}
 
@@ -320,7 +320,7 @@ private:
 		 *	Return the average time for verifying incoming challenges.
 		 */
 		float challengeVerificationAverage() const
-		{ 
+		{
 			return verificationTime_.average();
 		}
 
@@ -362,7 +362,7 @@ private:
 		AccumulatingEMA< uint32 > all_;
 		/// Failed login attempts because of their IP address banned.
 		AccumulatingEMA< uint32 > failedByIPAddressBan_;
-		/// Failed basic login attempts  
+		/// Failed basic login attempts
 		/// when passwordless only logins allowed
 		AccumulatingEMA< uint32 > attemptsWithPassword_;
 

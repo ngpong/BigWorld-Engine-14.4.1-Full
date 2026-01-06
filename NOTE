@@ -12,7 +12,7 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
     * 在创建虚拟机时先不选择镜像；创建完成后再去选择一个镜像；
     * 选择桥接网络；NAT 模式虚拟出一个独立的环境，要经过许多配置挺麻烦；
     * 选择系统最小安装(mini)，勾选必要的依赖软件可以省去一下麻烦；
-  * 进入系统，完成网络配置: 
+  * 进入系统，完成网络配置:
     * cd /etc/sysconfig/network-scripts/
     * vi ifcfg-ens160；修改网络属性，注意，该文件名可能会不一样
       * BOOTPROTO=static
@@ -69,38 +69,38 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
       git config --global http.proxy http://192.168.31.177:7890
     * 设置 socket 内核参数
       cat << 'EOF' >> sysctl.conf
-      
+
       # Core socket buffer
       net.core.rmem_max = 16777216
       net.core.rmem_default = 262144
       net.core.wmem_max = 16777216
       net.core.wmem_default = 262144
-      
+
       # TCP buffers
       net.ipv4.tcp_rmem = 4096 87380 16777216
       net.ipv4.tcp_wmem = 4096 65536 16777216
-      
+
       # UDP buffers
       net.ipv4.udp_mem = 65536 131072 262144
       net.ipv4.udp_rmem_min = 8192
       net.ipv4.udp_wmem_min = 8192
-      
+
       # Queue & backlog
       net.core.netdev_max_backlog = 5000
       net.core.somaxconn = 8192
       net.ipv4.tcp_max_syn_backlog = 8192
-      
+
       # TCP connection behavior
       net.ipv4.ip_local_port_range = 1024 65535
       net.ipv4.tcp_fin_timeout = 30
       net.ipv4.tcp_tw_reuse = 1
-      
+
       # TCP performance
       net.ipv4.tcp_syncookies = 1
       net.ipv4.tcp_window_scaling = 1
       net.ipv4.tcp_sack = 1
       net.ipv4.tcp_timestamps = 1
-      
+
       # File descriptor (kernel)
       fs.file-max = 524288
       EOF
@@ -138,7 +138,7 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
         * export LC_ALL=en_US.utf-8
         * export LANG=en_US.utf-8
         * echo -e "export LC_ALL=en_US.utf-8\nexport LANG=en_US.utf-8"  >> ~/.bashrc
-    * 编译: 
+    * 编译:
       scons --full --use-system-boost --prefix=$PWD/../build --libpath=../../boost/build/lib
 
 3. 编译服务端
@@ -196,7 +196,7 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
           g++-4.8_4.8.5-4ubuntu8_amd64.deb
       * sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.8 --slave /usr/bin/gcov gcov /usr/bin/gcov-4.8 --slave /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-4.8 --slave /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-4.8 --slave /usr/bin/cpp cpp /usr/bin/cpp-4.8
     * 打补丁包：
-      * git apply --check ./UBUNTU_BUILD.patch 
+      * git apply --check ./UBUNTU_BUILD.patch
       * git apply ./UBUNTU_BUILD.patch
   * 编译项目：
     * make [MF_CONFIG=debug] -C programming/
@@ -235,7 +235,7 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
   * 创建 ~/.bwmachined.conf；要注意其中使用 <> 标注的目录需要根据实际情况修改
       cat << 'EOF' >> ~/.bwmachined.conf
       <HOME>/mf/bigworld;<BIGWORD_SOURCE>/game/res/bigworld:<BIGWORD_SOURCE>/game/res/fantasydemo
-      
+
       [Components]
       cellApp
       baseApp
@@ -246,19 +246,19 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
       dbAppMgr
       loginApp
       bots
-      
+
       [Groups]
       dev
-      
+
       [TimingMethod]
       gettime
-      
+
       #[architecture]
       #32
-      
+
       #[InternalInterface]
       #eth0
-      
+
       #[MaxPacketDelay]
       #100
       EOF
@@ -267,6 +267,16 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
     * cd game/tools/bigworld/server/install
     * ./bwmachined2.sh install
     * systemctl status bwmachined2
+    * 快捷命令:
+      * cd /root/BigWorld-Engine-14.4.1-Full/game/tools/bigworld/server/install && \
+          ./bwmachined2.sh remove && \
+          cp /root/BigWorld-Engine-14.4.1-Full/game/bin/server/el7_debug/tools/bwmachined2 /root/BigWorld-Engine-14.4.1-Full/game/tools/bigworld/server/bin/Hybrid64 && \
+          ./bwmachined2.sh install && \
+          systemctl restart bwmachined2 && \
+          systemctl status bwmachined2
+    * 查看服务日志：
+      * journalctl -u bwmachined2
+
   * 运行
     * cd game
     * ./start-all-server.sh
@@ -280,3 +290,18 @@ server 依赖于 centos7 的环境，我们可以选择使用 docker 或者是 v
     * 添加命令参数:
       --res C:\Users\NGPONG\Desktop\BigWorld-Engine-14.4.1-Full\game\res\fantasydemo;C:\Users\NGPONG\Desktop\BigWorld-Engine-14.4.1-Full\game\res\bigworld
   * 在 visual studio 中运行
+
+7. 集群管理与容灾措施
+https://chatgpt.com/share/6946fa00-3320-8005-9b52-06cb4905c6ae
+
+
+Mercury::MachineDaemon::queryForInternalInterface 包体结构
+send: | pack_flg[1b] | buddy[4b] | msg_len[2b] | msg_body<msg_id[1b] | msg_flg[1b] | msg_seq[2b] | xxxx[xb]> |
+recv: | pack_flg[1b] | buddy[4b] | msg_len[2b] | msg_body<msg_id[1b] | msg_flg[1b] | msg_seq[2b] | xxxx[xb]> |
+msg_seq: 保证幂等性
+pack_flg | msg_flg: 通信时使用到的一些逻辑参数
+buddy: 应该与集群管理有关
+xxxx: 这部分对应着不同继承 MachineGuardMessage 的派生而不同
+
+
+channel 是什么？

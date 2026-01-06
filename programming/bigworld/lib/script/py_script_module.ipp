@@ -64,7 +64,7 @@ template <class ERROR_HANDLER>
  *	@returns			True on success, false on failure.
  */
 template <class ERROR_HANDLER>
-inline bool ScriptModule::addObject( const char * name, 
+inline bool ScriptModule::addObject( const char * name,
 	const ScriptObject & value, const ERROR_HANDLER & errorHandler ) const
 {
 	// PyModule_AddObject steals a reference, so we increment it

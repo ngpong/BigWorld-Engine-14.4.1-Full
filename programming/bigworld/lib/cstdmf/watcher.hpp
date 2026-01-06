@@ -1446,7 +1446,7 @@ public:
 	 *
 	 *	@param toWatch	Specifies the map to watch.
 	 */
-	MapWatcher( MAP & toWatch = *(MAP*)NULL, 
+	MapWatcher( MAP & toWatch = *(MAP*)NULL,
 			IMapKeyStringConverter< MAP_key > * pKeyStringConverter = NULL ) :
 		toWatch_( toWatch ),
 		pKeyStringConverter_( pKeyStringConverter ),
@@ -3131,7 +3131,7 @@ inline WatcherPtr getWatcher( const char * path )
 	return Watcher::rootWatcher().getChild( path );
 }
 
-/** 
+/**
  *	This class implements a freezable watcher, that defines a boolean
  *	watcher that is used to automatically freeze data going through a
  *	process.
@@ -3140,7 +3140,7 @@ template <typename DataType>
 class FreezeWatcher
 {
 public:
-	FreezeWatcher( const char * watcherName, const char * comment ) : 
+	FreezeWatcher( const char * watcherName, const char * comment ) :
 		isFrozen_( false ),
 		name_( watcherName ),
 		wasFrozen_( false )
@@ -3183,7 +3183,7 @@ private:
 
 
 /**
- *	This watcher allows for a watcher to watch an object with an absolute 
+ *	This watcher allows for a watcher to watch an object with an absolute
  *	address, circumventing the usual mechanism of offseting from a base address.
  */
 class AbsoluteWatcher : public Watcher
@@ -3196,9 +3196,9 @@ public:
 
 	// Overrides from Watcher
 	bool getAsString( const void * base, const char * path,
-		BW::string & result, BW::string & desc, 
+		BW::string & result, BW::string & desc,
 		Watcher::Mode & mode ) const /* override */;
-	bool setFromString( void * base, const char * path, 
+	bool setFromString( void * base, const char * path,
 		const char * valueStr ) /* override */;
 	bool getAsStream( const void * base, const char * path,
 		WatcherPathRequestV2 & pathRequest ) const /* override */;

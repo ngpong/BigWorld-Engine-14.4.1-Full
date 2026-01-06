@@ -284,7 +284,7 @@ bool BWMachined::findBroadcastInterface()
 			syslog( LOG_CRIT,
 				"Timed out before receiving any broadcast discovery responses. "
 					"Check that firewall rules are not preventing the sending "
-					"and receipt of UDP broadcast messages on port %d.", 
+					"and receipt of UDP broadcast messages on port %d.",
 				PORT_BROADCAST_DISCOVERY );
 			return false;
 		}
@@ -474,10 +474,10 @@ void BWMachined::closeEndpoints()
 
 
 /*
- * Returns the value of the specified BWMachined configuration option.  
+ * Returns the value of the specified BWMachined configuration option.
  * Configuration option is either from bwmachined.conf or bigworld.conf.
  */
-const char * BWMachined::findOption( 
+const char * BWMachined::findOption(
 	const char * optionName, const char * oldOptionName )
 {
 	TagsMap::iterator tagIter = tags_.find( "bwmachined" );
@@ -528,7 +528,7 @@ const char * BWMachined::findOption(
 }
 
 
-/** 
+/**
  * Set PID path read in from command line arguments.
  */
 void BWMachined::setPidPath( BW::string pidPath )
@@ -649,7 +649,7 @@ bool BWMachined::readConfigFile()
 	{
 		timingMethod_ = optionValue;
 		syslog( LOG_INFO, "Using %s timing", timingMethod_.c_str() );
-	}	
+	}
 
 
 	// Extract architecture configuration option.
@@ -732,7 +732,7 @@ bool BWMachined::readConfigFile()
 		}
 	}
 
-	// 
+	//
 	optionValue = this->findOption( "max_packet_delay", "MaxPacketDelay" );
 
 	if (optionValue)
@@ -785,7 +785,7 @@ int BWMachined::run()
 
 	int exitCode = EXIT_SUCCESS;
 
-	// If PID path is blank after examining arguments and config file, don't 
+	// If PID path is blank after examining arguments and config file, don't
 	// attempt to create a PID file.
 	if (!pidPath_.empty())
 	{
@@ -793,7 +793,7 @@ int BWMachined::run()
 
 		if (pidFile == NULL)
 		{
-			syslog( LOG_INFO, "Cannot access PID file %s, error: %s", 
+			syslog( LOG_INFO, "Cannot access PID file %s, error: %s",
 					pidPath_.c_str(), strerror( errno ) );
 			exitCode = EXIT_FAILURE;
 			return exitCode;
@@ -801,7 +801,7 @@ int BWMachined::run()
 
 		if (fprintf( pidFile, "%d", mf_getpid() ) < 0)
 		{
-			syslog( LOG_INFO, "Cannot write to PID file %s, error: %s", 
+			syslog( LOG_INFO, "Cannot write to PID file %s, error: %s",
 					pidPath_.c_str(), strerror( errno ) );
 			exitCode = EXIT_FAILURE;
 			fclose( pidFile );
@@ -835,7 +835,7 @@ int BWMachined::run()
 		int selgot = select( std::max( maxfd+1, osmaxfd+1 ),
 			&fds, NULL, NULL, &tv );
 
-		if (selgot == 0) 
+		if (selgot == 0)
 		{
 			continue;
 		}
@@ -1168,6 +1168,8 @@ bool BWMachined::handleMessage( Endpoint & ep, sockaddr_in & sin,
 	{
 		ListenerMessage &lm = static_cast< ListenerMessage& >( mgm );
 
+    syslog(LOG_INFO, "[neil] Received <MachineGuardMessage::LISTENER_MESSAGE> msg; name: %s\n", lm.name_.c_str());
+
 		if (lm.param_ == (lm.ADD_BIRTH_LISTENER | lm.PARAM_IS_MSGTYPE))
 		{
 			birthListeners_.add( lm, sin.sin_addr.s_addr );
@@ -1294,12 +1296,12 @@ bool BWMachined::handleMessage( Endpoint & ep, sockaddr_in & sin,
 			unsigned int i = 0;
 			while (i < procs_.size())
 			{
-				ProcessMessage &psm = procs_[ i ].m;
+			  ProcessMessage &psm = procs_[ i ].m;
 
-				if ((pm.pid_ == psm.pid_) &&
+        if ((pm.pid_ == psm.pid_) &&
 					(pm.category_ == psm.category_) &&
 					(pm.name_ == psm.name_))
-				{
+        {
 					break;
 				}
 
@@ -1326,31 +1328,33 @@ bool BWMachined::handleMessage( Endpoint & ep, sockaddr_in & sin,
 			}
 			else
 			{
-				// Make new entry for the new process
-				procs_.push_back( ProcessInfo() );
-			}
+        syslog(LOG_INFO, "[neil] Received <ProcessMessage::REGISTER> msg; name: %s; addr:%s:%d\n", pm.name_.c_str(), (char*)inet_ntoa((struct in_addr)sin.sin_addr), htons(pm.port_));
 
-			// Write the registration info into the ProcessStatsMessage and
-			// mark it as outgoing for future sends
-			ProcessInfo &pi = procs_[i];
-			pi.m << pm;
-			pi.m.outgoing( true );
+      	// Make new entry for the new process
+      	procs_.push_back( ProcessInfo() );
+      }
 
-			// Update it twice to ensure fields are in a readable state
-			for (int j=0; j < 2; j++)
-			{
-				updateProcessStats( pi );
-			}
+      // Write the registration info into the ProcessStatsMessage and
+      // mark it as outgoing for future sends
+      ProcessInfo &pi = procs_[i];
+      pi.m << pm;
+      pi.m.outgoing( true );
 
-			// platform-specific initialisation
-			pi.init( pm );
+      // Update it twice to ensure fields are in a readable state
+      for (int j=0; j < 2; j++)
+      {
+      	updateProcessStats( pi );
+      }
 
-			// Tell listeners about it
-	 		broadcastToListeners( pm, pm.NOTIFY_BIRTH );
+      // platform-specific initialisation
+      pi.init( pm );
 
-			// and confirm the registration to the sender
-			pm.outgoing( true );
-			replies.append( pm );
+      // Tell listeners about it
+      broadcastToListeners( pm, pm.NOTIFY_BIRTH );
+
+      // and confirm the registration to the sender
+      pm.outgoing( true );
+      replies.append( pm );
 
 			syslog( LOG_INFO, "Added %s for uid:%d (debug: at index %d)\n",
 				pm.c_str(), pm.uid_, i );
@@ -1381,6 +1385,8 @@ bool BWMachined::handleMessage( Endpoint & ep, sockaddr_in & sin,
 
 		case ProcessMessage::NOTIFY_BIRTH:
 		{
+      syslog(LOG_INFO, "[neil] Received <ProcessMessage::NOTIFY_BIRTH> msg; name: %s\n", pm.name_.c_str());
+
 			birthListeners_.handleNotify( this->endpoint(), pm, sin.sin_addr );
 			return true;
 		}
@@ -1576,7 +1582,7 @@ bool BWMachined::handleMessage( Endpoint & ep, sockaddr_in & sin,
 
 			if (um.param_ & um.PARAM_GET_VERSION)
 			{
-				pServerPlatform_->determineVersion( um.uid_, 
+				pServerPlatform_->determineVersion( um.uid_,
 					matches[i]->mfroot_, matches[i]->versionString_ );
 			}
 

@@ -92,7 +92,7 @@ namespace // (anonymous)
 {
 
 int s_moduleTokens BW_UNUSED_ATTRIBUTE = ResMgr_token | PyScript_token |
-    force_link_UDO_REF | BgTaskManager_token | BlobOrNull_token | 
+    force_link_UDO_REF | BgTaskManager_token | BlobOrNull_token |
     PyURLRequest_token;
 
 // -----------------------------------------------------------------------------
@@ -237,7 +237,7 @@ bool DBApp::initNetwork()
 
 
 /**
- *  This method initialises our connection to BaseAppMgr, and determines our 
+ *  This method initialises our connection to BaseAppMgr, and determines our
  *  recovery start-up mode.
  *
  *  @return     true on success, false otherwise.
@@ -305,6 +305,12 @@ bool DBApp::initScript( int argc, char ** argv )
         return false;
     }
 
+    // game/res/fantasydemo/scripts/db
+    // game/res/bigworld/scripts/db
+    // game/res/fantasydemo/scripts/server_common
+    // game/res/bigworld/scripts/server_common
+    //
+    // 该函数调用主要适用于初始化 Python 解释器还有一些必要的库；绑定一些 c 函数到 Python 等等
     if (!this->ScriptApp::initScript( "database",
                 EntityDef::Constants::databasePath() ) ||
 #ifdef BUILD_PY_URLREQUEST
@@ -315,18 +321,28 @@ bool DBApp::initScript( int argc, char ** argv )
         return false;
     }
 
+    // 在 DBApp 构造函数执行的过程中调用了 createEventType("onInit") createEventType("onFini")；
     this->scriptEvents().createEventType( "onAppReady" );
     this->scriptEvents().createEventType( "onDBAppReady" );
 
+    // 此处 hook 了 python 内置的异常处理到自己实现的 c 函数当中；
     Script::initExceptionHook( &mainDispatcher_ );
 
     ScriptModule module = ScriptModule::import( "BigWorld",
         ScriptErrorPrint( "Failed to import BigWorld module" ) );
 
+    // 注册了 BigWorld.EXPOSE_LOCAL_ONLY
     MF_ASSERT( module );
     module.setAttribute( "EXPOSE_LOCAL_ONLY", CallableWatcher::LOCAL_ONLY,
         ScriptErrorPrint( "Failed to set EXPOSE_LOCAL_ONLY attribute" ) );
 
+    // 此函数加载一些与程序关联的个性化脚本，BWPersonality.py；
+    //
+    // 该文件需要在资源目录中查找；内省情况下是不需要建立该文件的；
+    //
+    // 我们使用 scriptEvents().createEventType 创建的事件，会对应该脚本中对应的函数，例
+    // 如：createEventType("onAppReady") 后，如果脚本里面也存在 onAppReady 函数，则会绑
+    // 定该函数当程序环境当中；
     if (this->initPersonality())
     {
         if (!this->triggerOnInit())
@@ -350,12 +366,20 @@ bool DBApp::initEntityDefs()
 {
     MF_ASSERT( status_.status() == DBStatus::STARTING );
     MF_ASSERT( Py_IsInitialized() );
-    
+
     DEBUG_MSG( "DBApp::initEntityDefs\n" );
 
     status_.set( DBStatus::STARTING, "Loading entity definitions" );
 
     pEntityDefs_ = new EntityDefs();
+    // 此处代码，会根据下面两个文件所定义的实体描述，依据实体名对应的 def 文件去初始化 entityDescriptionMap_ 成员：
+    //   • game/res/fantasydemo/scripts/entities.xml
+    //   • game/res/fantasydemo/scripts/services.xml
+    //
+    // 实体描述并不是真正的实体，它类似用于创建实体的模板，它包含了
+    //   • 实体的属性；包括是否要持久化等等信息，主要用于状态同步使用
+    //   • 实体的函数，函数是否暴露，如何暴露，主要用于 RPC 通信
+    //   • 一些额外且繁杂的其他信息
     if (!pEntityDefs_->init(
         BWResource::openSection( EntityDef::Constants::entitiesFile() ) ))
     {
@@ -628,7 +652,7 @@ bool DBApp::initDatabaseStartup()
     {
         return false;
     }
-    
+
     initState_ |= INIT_STATE_DATABASE_STARTUP;
 
     return true;
@@ -756,7 +780,7 @@ bool DBApp::initConfig()
     // done over all shards not just for DBApp Alpha.
 
     shouldCacheLogOnRecords_ =
-        (Config::shouldCacheLogOnRecords() && 
+        (Config::shouldCacheLogOnRecords() &&
             shouldAlphaResetGameServerState_);
 
     initState_ |= INIT_STATE_CONFIG;
@@ -829,7 +853,7 @@ bool DBApp::initDBAppAlpha()
         }
         else
         {
-            // If this is a promotion then we are already up and 
+            // If this is a promotion then we are already up and
             // running, so no need to do anything else
             return true;
         }
@@ -1139,7 +1163,7 @@ bool DBApp::initScriptAppReady()
 
 
 /** 
- *  This method loads stored space data from the database to give to CellAppMgr 
+ *  This method loads stored space data from the database to give to CellAppMgr
  *  (via BaseAppMgr).
  *
  *  @return true on success, false otherwise.
@@ -1407,7 +1431,7 @@ void DBApp::onConsolidateProcessEnd( bool isOK )
     else
     {
         SECONDARYDB_CRITICAL_MSG( "DBApp::onConsolidateProcessEnd: "
-                "Invalid state %d at the end of data consolidation\n", 
+                "Invalid state %d at the end of data consolidation\n",
             status_.status() );
     }
 }
@@ -1498,7 +1522,7 @@ private:
 
 
 // ----------------------------------------------------------------------------
-// Section: Secondary DBs 
+// Section: Secondary DBs
 // ----------------------------------------------------------------------------
 
 /**
@@ -1744,7 +1768,7 @@ void DBApp::checkPendingLoginAttempts()
 /**
  *  This method is called when a new BaseAppMgr is started.
  */
-void DBApp::handleBaseAppMgrBirth( 
+void DBApp::handleBaseAppMgrBirth(
         const DBAppInterface::handleBaseAppMgrBirthArgs & args )
 {
     baseAppMgr_.addr( args.addr );
@@ -1766,7 +1790,7 @@ void DBApp::handleBaseAppMgrBirth(
 /**
  *  This method is called when a new DBAppMgr is started.
  */
-void DBApp::handleDBAppMgrBirth( 
+void DBApp::handleDBAppMgrBirth(
         const DBAppInterface::handleDBAppMgrBirthArgs & args )
 {
     INFO_MSG( "DBApp::handleDBAppMgrBirth( id = %d ): %s\n",
@@ -1779,7 +1803,7 @@ void DBApp::handleDBAppMgrBirth(
 /**
  *  This method is called when a DBAppMgr dies.
  */
-void DBApp::handleDBAppMgrDeath( 
+void DBApp::handleDBAppMgrDeath(
         const DBAppInterface::handleDBAppMgrDeathArgs & args )
 {
     if (dbAppMgr_.address() != args.addr)
@@ -1873,7 +1897,7 @@ void DBApp::shutDown()
 void DBApp::controlledShutDown(
         const DBAppInterface::controlledShutDownArgs & args )
 {
-    DEBUG_MSG( "DBApp::controlledShutDown: stage = %s\n", 
+    DEBUG_MSG( "DBApp::controlledShutDown: stage = %s\n",
         ServerApp::shutDownStageToString( args.stage ) );
 
     // Make sure we no longer send to anonymous channels etc.
@@ -1925,7 +1949,7 @@ void DBApp::finalise()
 /**
  *  This method handles telling us that a CellApp is overloaded.
  */
-void DBApp::cellAppOverloadStatus( 
+void DBApp::cellAppOverloadStatus(
         const DBAppInterface::cellAppOverloadStatusArgs & args )
 {
     hasOverloadedCellApps_ = args.hasOverloadedCellApps;
@@ -1971,7 +1995,7 @@ void DBApp::putEntity( const EntityKey & entityKey,
     }
 
     pDatabase_->putEntity( entityKey, entityID,
-            pStream, pBaseMailbox, removeBaseMailbox, 
+            pStream, pBaseMailbox, removeBaseMailbox,
             putExplicitID, updateAutoLoad, handler );
 }
 
@@ -2041,7 +2065,7 @@ void DBApp::logOn( const Mercury::Address & srcAddr,
     {
         // We haven't finished registering with DBAppMgr yet, or we have not
         // finished recovering after a DBApp Alpha death.
-        
+
         this->sendFailure( replyID, srcAddr,
             LogOnStatus::LOGIN_REJECTED_SERVER_NOT_READY,
             "Server not ready." );
@@ -2515,7 +2539,7 @@ void DBApp::lookupEntities( const Mercury::Address & srcAddr,
 
     data >> entityTypeID >> criteria;
 
-    LookUpEntitiesHandler * pHandler = 
+    LookUpEntitiesHandler * pHandler =
         new LookUpEntitiesHandler( *this, srcAddr, header.replyID );
 
     pHandler->lookUpEntities( entityTypeID, criteria );
@@ -2712,7 +2736,7 @@ void DBApp::endMailboxRemapping()
  */
 void DBApp::remapMailbox( EntityMailBoxRef & mailbox ) const
 {
-    MailboxRemapInfo::const_iterator found = 
+    MailboxRemapInfo::const_iterator found =
         mailboxRemapInfo_.find( mailbox.addr );
 
     if ( found != mailboxRemapInfo_.end() )
@@ -2753,7 +2777,7 @@ void DBApp::sendBaseAppMgrInitData()
  */
 void DBApp::onGetBaseAppMgrInitDataComplete( GameTime gameTime )
 {
-    // Once BaseAppMgr receives initData, it can start adding BaseApps, so 
+    // Once BaseAppMgr receives initData, it can start adding BaseApps, so
     // this step is a requirement for the completion of
     // initWaitForAppsToBecomeReadyAsync().
 

@@ -126,7 +126,7 @@ void EntityNavigate::deregisterNavigateStepController(
  *
  *	@param	destination		(Vector3) The destination point for the Entity, in
  *							local space.
- *	@param	velocity		(float)	The speed to move the Entity in	
+ *	@param	velocity		(float)	The speed to move the Entity in
  *							metres / second.
  *	@param	userData		(optional int) Data that can be passed to
  *							notification method.
@@ -268,7 +268,7 @@ PyObject * EntityNavigate::moveToEntity( int destEntityID,
  *	@see cancel
  *
  *	@param	destination		(Vector3) The destination to move to in local
- *							space. 
+ *							space.
  *	@param	acceleration	(float)	The rate at which the entity will
  *							accelerate, in metres / second / second.
  *	@param	maxSpeed		(float) The maximum speed the entity will
@@ -326,7 +326,7 @@ PyObject * EntityNavigate::accelerateToPoint(	Position3D destination,
 	}
 	else
 	{
-		PyErr_SetString( PyExc_TypeError, 
+		PyErr_SetString( PyExc_TypeError,
 			"Facing must one of the value 0, 1 or 2" );
 		return NULL;
 	}
@@ -385,7 +385,7 @@ PyObject * EntityNavigate::accelerateToPoint(	Position3D destination,
  *	Entity through a series of waypoints by applying acceleration.
  *
  *	@param	waypoints		The waypoints to pass through, in local space.
- *	@param	acceleration	The rate at which the entity will accelerate, in 
+ *	@param	acceleration	The rate at which the entity will accelerate, in
  *							metres / second / second.
  *	@param	maxSpeed		The maximum speed the entity will maintain.
  *	@param	intFacing		Defines direction the entity should face while it
@@ -397,7 +397,7 @@ PyObject * EntityNavigate::accelerateToPoint(	Position3D destination,
  *
  *	@return					The ID of the newly created controller
  */
-PyObject * EntityNavigate::accelerateAlongPath(	
+PyObject * EntityNavigate::accelerateAlongPath(
 											BW::vector<Position3D> waypoints,
 											float acceleration,
 											float maxSpeed,
@@ -425,12 +425,12 @@ PyObject * EntityNavigate::accelerateAlongPath(
 	}
 	else
 	{
-		PyErr_SetString( PyExc_TypeError, 
+		PyErr_SetString( PyExc_TypeError,
 			"Facing must one of the value 0, 1 or 2" );
 		return NULL;
 	}
 
-	ControllerPtr pController = new AccelerateAlongPathController(	
+	ControllerPtr pController = new AccelerateAlongPathController(
 																waypoints,
 																acceleration,
 																maxSpeed,
@@ -520,7 +520,7 @@ PyObject * EntityNavigate::accelerateToEntity(	EntityID destinationEntity,
 		return NULL;
 	}
 
-	ControllerPtr pController = new AccelerateToEntityController(	
+	ControllerPtr pController = new AccelerateToEntityController(
 															destinationEntity,
 															acceleration,
 															maxSpeed,
@@ -540,7 +540,7 @@ PyObject * EntityNavigate::accelerateToEntity(	EntityID destinationEntity,
  *	This function uses the BigWorld navigation system to move the Entity to a
  *	destination point, invoking a notification method on success or failure.
  *	BigWorld can have several pre-generated navigation systems, each with a
- *	different girth (resulting in different navigation paths). 
+ *	different girth (resulting in different navigation paths).
  *	Currently we don't support an entity which is on a vehicle to navigate,
  *	if you want to do so, you have to alight the vehicle first,
  *	or do navigate on the vehicle entity. For a given
@@ -560,7 +560,7 @@ PyObject * EntityNavigate::accelerateToEntity(	EntityID destinationEntity,
  *	@see cancel
  *
  *	@param	destination			(Vector3) The destination point for the entity.
- *	@param	velocity			(float) The speed to move the Entity in 
+ *	@param	velocity			(float) The speed to move the Entity in
  *								metres / second.
  *	@param	faceMovement		(optional bool) True if entity is to face in
  *								direction of movement (default).
@@ -659,7 +659,7 @@ PyObject * EntityNavigate::navigate( const Vector3 & dstPosition,
  *									next to model blocking portal (eg, door)
  *									(default 1.8 metres).
  *	@return 						(Vector3, bool) Returns None if the entity
- *									can't navigate to destination. 
+ *									can't navigate to destination.
  *									Otherwise, returns the point stopDist back
  *									along the navigation path from the
  *									activated portal and True if it reached the
@@ -699,7 +699,7 @@ PyObject * EntityNavigate::getStopPoint( const Vector3 & destination,
  *	towards a destination point, stopping at the next waypoint or given
  *	distance, invoking the onMove notification method on success.
  *
- *	When the Entity.onMove notification method is called, have it call 
+ *	When the Entity.onMove notification method is called, have it call
  *	Entity.navigateStep again to allow the entity to continue to move toward the
  *	target position.
  *
@@ -716,15 +716,15 @@ PyObject * EntityNavigate::getStopPoint( const Vector3 & destination,
  *
  *	Returns a Controller ID that can be used to cancel the movement. For
  *	example:
- *	@{ 
+ *	@{
  *		self.cancel( movementID )
  *	@}
- *	
+ *
  *	Movement can also be cancelled with:
  *	@{
  *		self.cancel( "Movement" )
  *	@}
- *	
+ *
  *	The notification method is not called when movement is cancelled.
  *
  *	The notification methods are defined as follows;
@@ -739,7 +739,7 @@ PyObject * EntityNavigate::getStopPoint( const Vector3 & destination,
  *
  *	@param	destination			(Vector3) The destination point for the Entity
  *								to move towards.
- *	@param	velocity			(float) The speed to move the Entity in 
+ *	@param	velocity			(float) The speed to move the Entity in
  *								metres / second.
  *	@param	maxMoveDistance		(float) Maximum distance to move, in metres.
  *	@param	maxSearchDistance 	(optional float) The maximum search distance
@@ -773,7 +773,7 @@ PyObject * EntityNavigate::getStopPoint( const Vector3 & destination,
  *	@return		The integer ID of the newly created controller.
  */
 PyObject * EntityNavigate::navigateStep( const Vector3 & dstPosition,
-		float velocity, float maxMoveDistance, float maxSearchDistance, 
+		float velocity, float maxMoveDistance, float maxSearchDistance,
 		bool faceMovement, float girth, int userArg )
 {
 	PROFILER_SCOPED( EntityNavigate_navigateStep );
@@ -870,7 +870,7 @@ PyObject * EntityNavigate::navigateStep( const Vector3 & dstPosition,
  *	@return		The integer ID of the newly created controller.
  */
 PyObject * EntityNavigate::navigateFollow( PyObjectPtr pEntityObj, float angle,
-		float distance, float velocity, float maxMoveDistance, 
+		float distance, float velocity, float maxMoveDistance,
 		float maxSearchDistance, bool faceMovement, float girth, int userArg )
 {
 	if (isEqual( maxSearchDistance, -1.f ))
@@ -881,7 +881,7 @@ PyObject * EntityNavigate::navigateFollow( PyObjectPtr pEntityObj, float angle,
 	// Check that the entity parameter actually has an entity
 	if (!PyObject_IsInstance( pEntityObj.get(), (PyObject*)(&Entity::s_type_) ))
 	{
-		PyErr_SetString( PyExc_TypeError, 
+		PyErr_SetString( PyExc_TypeError,
 			"parameter 1 must be an Entity instance" );
 		return NULL;
 	}
@@ -917,7 +917,7 @@ PyObject * EntityNavigate::navigateFollow( PyObjectPtr pEntityObj, float angle,
 			0, distance * cosf( totalYaw ) );
 	Vector3 position = pOtherEntity->position() + offset;
 
-	return this->navigateStep( position, velocity, maxMoveDistance, 
+	return this->navigateStep( position, velocity, maxMoveDistance,
 		maxSearchDistance, faceMovement, girth, userArg );
 }
 
@@ -1009,13 +1009,13 @@ int EntityNavigate::waySetPathLength()
 /*~	function Entity.navigatePathPoints
  *	@components{ cell }
  *
- *	This function returns the points along a path from this entity position 
+ *	This function returns the points along a path from this entity position
  *	to the given destination position.
  *
  *	@param 	destination 		(Vector3) 	The destination point.
  *	@param 	maxSearchDistance 	(float)		The maximum distance to search, in
  *											metres.
- *	@param 	girth				(float)		The navigation girth (defaults to 
+ *	@param 	girth				(float)		The navigation girth (defaults to
 											0.5).
  */
 /**
@@ -1080,8 +1080,8 @@ namespace // (anonymous)
  *						0.5).
  *	@return				The random point found, as a Vector3.
  */
-PyObject * findRandomNeighbourPointWithRange( const char* funcName, 
-		SpaceID spaceID, Vector3 position, 
+PyObject * findRandomNeighbourPointWithRange( const char* funcName,
+		SpaceID spaceID, Vector3 position,
 		float minRadius, float maxRadius, float girth )
 {
 	Space * pSpace = CellApp::instance().findSpace( spaceID );
@@ -1149,12 +1149,12 @@ PyObject * findRandomNeighbourPointWithRange( SpaceID spaceID,
 		const Vector3 & position, float minRadius, float maxRadius,
 		float girth = 0.5 )
 {
-	return findRandomNeighbourPointWithRange( 
+	return findRandomNeighbourPointWithRange(
 		"BigWorld.findRandomNeighbourPointWithRange",
 		spaceID, position, minRadius, maxRadius, girth );
 }
 PY_AUTO_MODULE_FUNCTION( RETOWN, findRandomNeighbourPointWithRange,
-	ARG( SpaceID, ARG( Vector3, ARG( float, ARG( float, 
+	ARG( SpaceID, ARG( Vector3, ARG( float, ARG( float,
 		OPTARG( float, 0.5f, END ) ) ) ) ), BigWorld )
 
 
@@ -1183,12 +1183,12 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, findRandomNeighbourPointWithRange,
 PyObject * findRandomNeighbourPoint( SpaceID spaceID,
 	Vector3 position, float radius, float girth = 0.5 )
 {
-	return findRandomNeighbourPointWithRange( 
+	return findRandomNeighbourPointWithRange(
 		"BigWorld.findRandomNeighbourPoint",
 		spaceID, position, 0.f, radius, girth );
 }
 PY_AUTO_MODULE_FUNCTION( RETOWN, findRandomNeighbourPoint,
-	ARG( SpaceID, ARG( Vector3, ARG( float, OPTARG( float, 0.5f, END ) ) ) ), 
+	ARG( SpaceID, ARG( Vector3, ARG( float, OPTARG( float, 0.5f, END ) ) ) ),
 	BigWorld )
 
 
@@ -1350,7 +1350,7 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, configureConnection,
  * 	@components{ cell }
  *
  * 	Return a path of points between the given source and destination points in
- * 	the space of the given space ID. The space must be loaded on this CellApp. 
+ * 	the space of the given space ID. The space must be loaded on this CellApp.
  *
  * 	@param spaceID 	(int)		The space ID.
  * 	@param src	(Vector3)		The source point in the space.
@@ -1365,7 +1365,7 @@ PY_AUTO_MODULE_FUNCTION( RETOWN, configureConnection,
  * 					destination point.
  *
  */
-PyObject * navigatePathPoints( SpaceID spaceID, const Vector3 & src, 
+PyObject * navigatePathPoints( SpaceID spaceID, const Vector3 & src,
 		const Vector3 & dst, float maxSearchDistance, float girth )
 {
 	if (isEqual( maxSearchDistance, -1.f ))
@@ -1396,9 +1396,9 @@ PyObject * navigatePathPoints( SpaceID spaceID, const Vector3 & src,
 
 	return pResult;
 }
-PY_AUTO_MODULE_FUNCTION( RETOWN, navigatePathPoints, 
-	ARG( SpaceID, ARG( Vector3, ARG( Vector3, 
-		OPTARG( float, -1.f, OPTARG( float, 0.5f, END ) ) ) ) ), 
+PY_AUTO_MODULE_FUNCTION( RETOWN, navigatePathPoints,
+	ARG( SpaceID, ARG( Vector3, ARG( Vector3,
+		OPTARG( float, -1.f, OPTARG( float, 0.5f, END ) ) ) ) ),
 	BigWorld )
 
 } // end (anonymous) namespace

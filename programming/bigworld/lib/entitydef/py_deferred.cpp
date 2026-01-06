@@ -57,6 +57,7 @@ bool PyDeferred::staticInit()
 		return true;
 	}
 
+  // Twisted 是一个 Python 编写的事件驱动型网络编程框架
 	PyObject * pModule = PyImport_ImportModule( "twisted.internet.defer" );
 
 	if (!pModule)
@@ -70,6 +71,10 @@ bool PyDeferred::staticInit()
 		return false;
 	}
 
+  // 此处获得了 twisted.internet.defer 模块中的 Deferred 类；
+  // https://docs.twisted.org/en/stable/api/twisted.internet.defer.html
+  //
+  // 依照文档说明，此类可用于构建延迟执行的回调函数
 	s_classDeferred = PyObjectPtr(
 						PyObject_GetAttrString( pModule, "Deferred" ),
 						PyObjectPtr::STEAL_REFERENCE );
@@ -108,7 +113,7 @@ PyDeferred::PyDeferred() :
  *
  */
 bool PyDeferred::callback( PyObjectPtr pArg )
-{ 
+{
 	return this->callMethod( "callback", pArg );
 }
 

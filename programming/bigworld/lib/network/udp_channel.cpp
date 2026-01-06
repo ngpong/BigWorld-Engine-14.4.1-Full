@@ -427,7 +427,7 @@ void UDPChannel::checkOverflowErrors()
 	if (maxOverflowPackets != 0)
 	{
 		// Only assert if we're explicitly told to
-		MF_ASSERT( s_allowInteractiveDebugging || 
+		MF_ASSERT( s_allowInteractiveDebugging ||
 					!s_assertOnMaxOverflowPackets ||
 					(numOverflowPackets < maxOverflowPackets) );
 
@@ -439,7 +439,7 @@ void UDPChannel::checkOverflowErrors()
 				WARNING_MSG( "UDPChannel::checkOverflowErrors(%s): "
 						"Overflow packet list size (%u) exceeding "
 						"safety threshold (%u).\n",
-					this->c_str(), numOverflowPackets, 
+					this->c_str(), numOverflowPackets,
 					(maxOverflowPackets / 2) );
 
 				hasSeenOverflowWarning_ = true;
@@ -1188,7 +1188,7 @@ void UDPChannel::sendUnacked( UnackedPacket & unacked )
 {
 	unacked.pPacket_->updateChannelVersion( version_, id_ );
 
-	pNetworkInterface_->sendPacket( addr_, unacked.pPacket_.get(), this, 
+	pNetworkInterface_->sendPacket( addr_, unacked.pPacket_.get(), this,
 		/* isResend: */ true );
 
 	unacked.lastSentAtOutSeq_ = smallOutSeqAt_;
@@ -1205,7 +1205,7 @@ void UDPChannel::sendUnacked( UnackedPacket & unacked )
  *	adding the packet to the receive window and queueing an ACK to the next
  *	outgoing bundle on this channel.
  */
-UDPChannel::AddToReceiveWindowResult UDPChannel::addToReceiveWindow( 
+UDPChannel::AddToReceiveWindowResult UDPChannel::addToReceiveWindow(
 		Packet * p, const Address & srcAddr, PacketReceiverStats & stats )
 {
 	const SeqNum seq = p->seq();
@@ -1250,7 +1250,7 @@ UDPChannel::AddToReceiveWindowResult UDPChannel::addToReceiveWindow(
 
 	if (!p->isPiggyback())
 	{
-		// No need to ACK piggybacks as they are implicitly ACKed by the 
+		// No need to ACK piggybacks as they are implicitly ACKed by the
 		// containing packet's ACK.
 
 		// Always add the ACKs for others even though a cumulative ack may mean
@@ -1316,7 +1316,7 @@ UDPChannel::AddToReceiveWindowResult UDPChannel::addToReceiveWindow(
 	uint32 requiredWindowSize = seqMask(seq - inSeqAt_);
 
 	// Note that we store packets between
-	//  [inSeqAt_ + 1, inSeqAt_ + bufferedReceives_.size()] 
+	//  [inSeqAt_ + 1, inSeqAt_ + bufferedReceives_.size()]
 	// in bufferedReceives. This is why we have > instead of >= in the below
 	// conditions.
 
@@ -1500,8 +1500,8 @@ const char * UDPChannel::c_str() const
  */
 Bundle * UDPChannel::newBundle()
 {
-	return new UDPBundle( 
-			(pFilter_ ? pFilter_->maxSpareSize() : 0), 
+	return new UDPBundle(
+			(pFilter_ ? pFilter_->maxSpareSize() : 0),
 			this );
 }
 
@@ -1563,9 +1563,9 @@ void UDPChannel::writeFlags( Packet * p )
 	}
 
 	// If this is the first reliable outbound packet, flag it.
-	if (p->hasFlags(Packet::FLAG_IS_RELIABLE) && 
-			this->isInternal() && 
-			(SeqNum(largeOutSeqAt_) == 0) && 
+	if (p->hasFlags(Packet::FLAG_IS_RELIABLE) &&
+			this->isInternal() &&
+			(SeqNum(largeOutSeqAt_) == 0) &&
 			(numReliablePacketsSent_ == 0))
 	{
 		p->enableFlags( Packet::FLAG_CREATE_CHANNEL );
@@ -1620,7 +1620,7 @@ void UDPChannel::reset( const Address & newAddr, bool warnOnDiscard )
 	}
 
 	// Send it now if the network interface has it registered for delayed
-	// sending. 
+	// sending.
 	pNetworkInterface_->sendIfDelayed( *this );
 
 	// Clear owned objects
@@ -1840,7 +1840,7 @@ WatcherPtr UDPChannel::getWatcher()
 		pWatcher->addChild( #PATH, makeWatcher( &UDPChannel::MEMBER ) );
 
 		ADD_WATCHER( numDataUnitsResent,	numPacketsResent_ );
-		ADD_WATCHER( numReliableDataUnitsResent, 
+		ADD_WATCHER( numReliableDataUnitsResent,
 											numReliablePacketsSent_ );
 
 		ADD_WATCHER( hasRemoteFailed,		hasRemoteFailed_ );

@@ -24,7 +24,7 @@
 		<DustDevil/>
 		<Info/>
 		<WebScreen/>
-		
+
 		<LightGuard/>
 		<TeleportSource/>
 		<Button/>
@@ -48,7 +48,7 @@
 	<ServerOnlyEntities>
 		<SpawnPoint/>
 		<TradingSupervisor/>
-		<RespawnManager/>	
+		<RespawnManager/>
 		<TeleportPoint/>
 		<SpaceLoader/>
 		<AuctionHouse/>

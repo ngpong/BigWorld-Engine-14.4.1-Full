@@ -75,10 +75,10 @@ public:
 	/// File system monitoring methods
 	void addModificationListener( ResourceModificationListener* listener );
 	void removeModificationListener( ResourceModificationListener* listener );
-	
+
 	void enableModificationMonitor( bool enable );
 	void flushModificationMonitor();
-	bool ignoreFileModification( const BW::string& fileName, 
+	bool ignoreFileModification( const BW::string& fileName,
 				ResourceModificationListener::Action action,
 				bool oneTimeOnly );
 	bool hasPendingModification( const BW::string& fileName );
@@ -307,7 +307,7 @@ template< typename T >
 /*static*/ int BWResource::findExtensionPos( const T * file )
 {
 	BW_GUARD;
-	size_t dotPos;	
+	size_t dotPos;
 	if (bw_str_find_last_of( file, T( '.' ) ,dotPos ))
 	{
 		size_t pos, fileNamePos = bw_str_len( file );
@@ -315,7 +315,7 @@ template< typename T >
 		{
 			fileNamePos = pos;
 		}
-		if (bw_str_find_last_of( file, T( '\\' ), pos ) && 
+		if (bw_str_find_last_of( file, T( '\\' ), pos ) &&
 			pos < fileNamePos)
 		{
 			fileNamePos = pos;
@@ -336,7 +336,7 @@ template< typename T >
  *	@param newExtension		new extension.
  */
 template< typename T >
-/*static*/ bool BWResource::changeExtensionT( T * file, 
+/*static*/ bool BWResource::changeExtensionT( T * file,
 						const T* newExtension, bool includingDot /*= true*/ )
 {
 	BW_GUARD;
@@ -382,12 +382,12 @@ template< typename T >
 /**
  *	Resolves the given path to an relative path.
  *	Note: the returned path will be sanitised ('\\' -> '/')
- * 
+ *
  * 	@param	path	Input: The path to resolve, null-terminated.
  * 					Output: The resolved path.
  *					it's assumed that path has been allocated
  *					with enough memory.
- * 
+ *
  * 	@return	success or not
  */
 template< typename T >

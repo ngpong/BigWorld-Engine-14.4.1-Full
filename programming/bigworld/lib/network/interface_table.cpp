@@ -22,7 +22,7 @@ InterfaceTable::InterfaceTable( EventDispatcher & dispatcher ) :
 	pBundleEventHandler_( NULL ),
 	statsTimerHandle_()
 {
-	statsTimerHandle_ = dispatcher.addTimer( 1000000, this, 
+	statsTimerHandle_ = dispatcher.addTimer( 1000000, this,
 		NULL, "InterfaceStats" );
 }
 

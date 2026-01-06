@@ -52,7 +52,7 @@ public:
 	{
 	}
 
-	bool canBeOnClient( 
+	bool canBeOnClient(
 		const BW::string & name, const EntityDistribution & distr ) const
 	{
 		return hasClientScript_;
@@ -71,19 +71,19 @@ class ServiceDescriptionHasPythonScript :
 	public HasScriptOrTagDistributionDecider
 {
 public:
-	bool canBeOnClient( 
-		const BW::string & name, const EntityDistribution & distr ) const	
-	{ 
-		return false; 
-	}
-
-	bool canBeOnCell( 
+	bool canBeOnClient(
 		const BW::string & name, const EntityDistribution & distr ) const
-	{ 
-		return false; 
+	{
+		return false;
 	}
 
-	bool canBeOnBase( 
+	bool canBeOnCell(
+		const BW::string & name, const EntityDistribution & distr ) const
+	{
+		return false;
+	}
+
+	bool canBeOnBase(
 		const BW::string & name, const EntityDistribution & distr ) const
 	{
 		if (distr.baseTag() != EntityDistribution::Unspecified)
@@ -624,7 +624,7 @@ void EntityDescriptionMap::addToMD5( MD5 & md5 ) const
 
 /**
  *	This method adds this object's persistent properties to the input MD5
- *	object.	
+ *	object.
  */
 void EntityDescriptionMap::addPersistentPropertiesToMD5( MD5 & md5 ) const
 {

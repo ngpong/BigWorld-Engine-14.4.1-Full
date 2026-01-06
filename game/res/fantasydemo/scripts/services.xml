@@ -8,5 +8,5 @@
 	<HTTPGameService/>
 	<HTTPReplayService/>
 	<SpaceRecorder/>
-    <ProfileDumpsService/>
+  <ProfileDumpsService/>
 </root>

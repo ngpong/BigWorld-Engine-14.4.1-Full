@@ -88,11 +88,11 @@ private:
 class IEntityDistributionDecider
 {
 public:
-	virtual bool canBeOnCell( const BW::string & name, 
+	virtual bool canBeOnCell( const BW::string & name,
 		const EntityDistribution & distr ) const = 0;
-	virtual bool canBeOnBase( const BW::string & name, 
+	virtual bool canBeOnBase( const BW::string & name,
 		const EntityDistribution & distr ) const = 0;
-	virtual bool canBeOnClient( const BW::string & name, 
+	virtual bool canBeOnClient( const BW::string & name,
 		const EntityDistribution & distr ) const = 0;
 };
 
@@ -103,11 +103,11 @@ public:
 class HasScriptOrTagDistributionDecider : public IEntityDistributionDecider
 {
 public:
-	virtual bool canBeOnCell( const BW::string & name, 
+	virtual bool canBeOnCell( const BW::string & name,
 		const EntityDistribution & distr ) const;
-	virtual bool canBeOnBase( const BW::string & name, 
+	virtual bool canBeOnBase( const BW::string & name,
 		const EntityDistribution & distr ) const;
-	virtual bool canBeOnClient( const BW::string & name, 
+	virtual bool canBeOnClient( const BW::string & name,
 		const EntityDistribution & distr ) const;
 
 protected:
@@ -268,7 +268,7 @@ public:
 	bool checkMethods( const MethodDescriptionList & methods,
 		ScriptObject pClass, bool warnOnMissing = true ) const;
 	bool checkExposedMethods( bool isProxy ) const;
-	
+
 	bool hasComponent( const BW::string & componentName ) const;
 
 	BWENTITY_API static int getDataDomains( StreamContentType contentType );
@@ -381,7 +381,7 @@ private:
 	DataLoDLevels		lodLevels_;
 
 	BW::set< BW::string >	tempProperties_;
-	
+
 	BW::set< BW::string >	componentNames_;
 
 #ifdef EDITOR_ENABLED

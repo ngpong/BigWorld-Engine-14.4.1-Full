@@ -20,7 +20,7 @@ namespace Mercury
 /**
  *	Constructor.
  */
-Bundle::Bundle( Channel * pChannel ) : 
+Bundle::Bundle( Channel * pChannel ) :
 	BinaryOStream(),
 	pChannel_( pChannel ),
 	isFinalised_( false ),
@@ -62,7 +62,7 @@ void Bundle::cancelRequests( RequestManager * pRequestManager, Reason reason )
  * 	This method finalises the bundle before it is sent.
  */
 void Bundle::finalise()
-{ 
+{
 	if (isFinalised_)
 	{
 		return;
@@ -70,7 +70,7 @@ void Bundle::finalise()
 
 	this->doFinalise();
 
-	isFinalised_ = true; 
+	isFinalised_ = true;
 }
 
 
@@ -82,7 +82,7 @@ void Bundle::finalise()
  *	packet.
  *
  *	@param pRequestManager		The request manager to add requests to.
- *	@param pChannel 			The channel receiving replies back. 
+ *	@param pChannel 			The channel receiving replies back.
  */
 void Bundle::addReplyOrdersTo( RequestManager * pRequestManager,
 		Channel * pChannel ) const

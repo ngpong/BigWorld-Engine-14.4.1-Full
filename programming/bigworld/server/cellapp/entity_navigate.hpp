@@ -88,7 +88,7 @@ public:
 
 	PY_AUTO_METHOD_DECLARE( RETOWN, navigate,
 		ARG( Vector3, ARG( float,
-		OPTARG( bool, true, OPTARG( float, -1.f, OPTARG( float, 0.5f, 
+		OPTARG( bool, true, OPTARG( float, -1.f, OPTARG( float, 0.5f,
 		OPTARG( float, 0.01f, OPTARG(int, 0, END ) ) ) ) ) ) ) )
 	PyObject * navigate( const Vector3 & dstPosition, float velocity,
 		bool faceMovement = true, float maxDistance = -1.f, float girth = 0.5f, float closeEnough = 0.01f, int userArg = 0 );
@@ -106,7 +106,7 @@ public:
 			ARG( float, ARG( float, OPTARG( float, -1.f, OPTARG( bool, true,
 			OPTARG ( float, 0.5f, OPTARG( int, 0, END ) ) ) ) ) ) ) ) ) )
 	PyObject * navigateFollow( PyObjectPtr pEntity, float angle, float offset,
-		float velocity, float maxMoveDistance, float maxSearchDistance = -1.f, 
+		float velocity, float maxMoveDistance, float maxSearchDistance = -1.f,
 		bool faceMovement = true, float girth = 0.5f, int userArg = 0 );
 
 
@@ -123,13 +123,13 @@ public:
 		OPTARG( float, 1.5f, OPTARG( float, 1.8f, END ) ) ) ) ) ) )
 	PyObject * getStopPoint( const Vector3 & dstPosition,
 			bool ignoreFirstStopPoint, float maxDistance = -1.f,
-			float girth = 0.5f, float stopDistance = 1.5f, 
+			float girth = 0.5f, float stopDistance = 1.5f,
 			float nearPortalDistance = 1.8f );
 
-	PY_AUTO_METHOD_DECLARE( RETOWN, navigatePathPoints, 
-		ARG( Vector3, 
+	PY_AUTO_METHOD_DECLARE( RETOWN, navigatePathPoints,
+		ARG( Vector3,
 		OPTARG( float, -1.f, OPTARG( float, 0.5f, END ) ) ) )
-	PyObject * navigatePathPoints( const Vector3 & dstPosition, 
+	PyObject * navigatePathPoints( const Vector3 & dstPosition,
 		float maxSearchDistance = -1.f, float girth = 0.5 );
 
 	static const Instance< EntityNavigate > instance;

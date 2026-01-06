@@ -42,7 +42,7 @@ inline void START_MSG( const char * name, bool isVerbose = true )
 			"User: %s. "
 			"PID: %d ----\n",
 		name, BWVersion::versionString().c_str(),
-		MF_CONFIG, __TIME__, __DATE__, 
+		MF_CONFIG, __TIME__, __DATE__,
 		getUserId(), getUsername(), getpid() );
 
 	if (Build::revision() != Build::UNKNOWN_REVISION)
@@ -97,42 +97,188 @@ int doBWMainT( Mercury::EventDispatcher & dispatcher,
 template <class SERVER_APP>
 int bwMainT( int argc, char * argv[], bool shouldLog = true )
 {
-	Mercury::EventDispatcher dispatcher;
+  Mercury::EventDispatcher dispatcher;
 
-	// Find the internal interface IP by querying BWMachined
-	if (!Mercury::MachineDaemon::queryForInternalInterface(
-			ServerApp::discoveredInternalIP ))
-	{
-		WARNING_MSG( "bwMainT: "
-			"Unable to determine internal interface via BWMachineD query.\n" );
-	}
+  // 向 bwmachined2 发送信息，以拿到一个可用于广播的地址;
+  // 虚拟机的地址：192.168.31.250
+  //
+  // Find the internal interface IP by querying BWMachined
+  if (!Mercury::MachineDaemon::queryForInternalInterface(
+  		ServerApp::discoveredInternalIP ))
+  {
+  	WARNING_MSG( "bwMainT: "
+  		"Unable to determine internal interface via BWMachineD query.\n" );
+  }
 
-	BW::string internalInterfaceName =
-			getBWInternalInterfaceSetting( SERVER_APP::configPath() );
+  // 需要加载配置读取，内省情况为 bwmachined
+  BW::string internalInterfaceName =
+      getBWInternalInterfaceSetting( SERVER_APP::configPath() );
 
-	Mercury::NetworkInterface interface( &dispatcher,
-			Mercury::NETWORK_INTERFACE_INTERNAL, 0,
-			internalInterfaceName.c_str() );
+  // INFO_MSG( "[%s]: internalInterfaceName %s\n", SERVER_APP::appName(), internalInterfaceName.c_str() );
+  // INFO_MSG( "[%s]: discoveredInternalIP 0x%08X\n", SERVER_APP::appName(), ServerApp::discoveredInternalIP );
 
-	SignalProcessor signalProcessor( dispatcher );
+  // EventDispatcher::EventDispatcher() → {@MDP}
+  // ╰╴initializer_list:
+  //   ├╴childDispatchers_ → {@MDP.@CD}
+  //   ├╴pFrequentTasks_ → {@MDP.@FT}
+  //   ╰╴pPoller_(EventPoller::create()) → {@MDP.@PO}
+  //     ╰╴initializer_list:
+  //       ├╴fdReadHandlers_() {@MDP.@PO.@RH}
+  //       ├╴fdWriteHandlers_() → {@MDP.@PO.@WH}
+  //       ╰╴epfd_(epoll_create()) → {@MDP.@PO.@EF}
+  //
+  // NetworkInterface::NetworkInterface(*pMainDispatcher, networkInterfaceType, listeningPort, *listeningInterface) → {@IIF}
+  // │                                         │                  │                   │                   │
+  // │                                         ↓                  │                   ↓                   ↓
+  // │                                      {@MDP}                │          {0: ephemeral-port}    {"bwmachined"}
+  // │                                                            ↓
+  // │                                            {Mercury::NETWORK_INTERFACE_INTERNAL}
+  // ├╴initializer_list:
+  // │  ├╴udpSocket_() → {@IIF.@US}
+  // │  ├╴pMainDispatcher({dispatcher})
+  // │  │                      ↓
+  // │  │                   {@MDP}
+  // │  ├╴pDelayedChannels_ → {@IIF.@DC}
+  // │  ├╴sendingStats_ → {@IIF.@SS}
+  // │  ├╴pDispatcher_(new EventDispatcher) → {@IIF.@DP}
+  // │  │ ╰╴initializer_list:
+  // │  │   ├╴pCouplingToParent_ → {@IIF.@DP.@CP}
+  // │  │   ╰╴pPoller_(EventPoller::create()), → {@IIF.@DP.@PO}
+  // │  │     ╰╴initializer_list:
+  // │  │       ├╴fdReadHandlers_() → {@IIF.@DP.@PO.@RH}
+  // │  │       ├╴fdWriteHandlers_() → {@IIF.@DP.@PO.@WH}
+  // │  │       ╰╴epfd_(epoll_create()) → {@IIF.@DP.@PO.@EF}
+  // │  ├╴pRequestManager_(isExternal_, pDispatcher_) → {@IIF.@RM}
+  // │  │ │                    ↓             ↓
+  // │  │ │                 {false}      {@IIF.@DP}
+  // │  │ ╰╴initializer_list:
+  // │  │   ├╴isExternal_(false)
+  // │  │   ╰╴dispatcher_({@IIF.@DP})
+  // │  ╰╴pInterfaceTable_(new InterfaceTable(*pDispatcher_)) → {@IIF.@IT}
+  // │    │                                        ↓
+  // │    │                                    {@IIF.@DP}
+  // │    ╰╴pDispatcher_.addTimer(1000000μs, this, NULL, "InterfaceStats");
+  // │            ↓                            ↓
+  // │        {@IIF.@DP}                   {@IIF.@IT}
+  // ╰╴initializer_body:
+  //    ├╴pPacketReceiver_ = new PacketReceiver(udpSocket_, *this); → {@IIF.@PR}
+  //    │ │                                        ↓           ↓
+  //    │ │                                   {@IIF.@US}     {@IIF}
+  //    │ ├╴initializer_list:
+  //    │ │ ╰╴onceOffReceiver_() → {@IIF.@PR.@OR}
+  //    │ │   ╰╴initializer_list:
+  //    │ │     ╰╴clearFragmentedBundlesTimerHandle_()
+  //    │ ╰╴initializer_body:
+  //    │   ├╴onceOffReceiver_.init(this->dispatcher());
+  //    │   │ │                       ↓        ↓
+  //    │   │ │                   {@IIF.@PR} {@IIF.@DP}
+  //    │   │ ╰╴clearFragmentedBundlesTimerHandle_ = dispatcher.addTimer(FragmentedBundle::MAX_AGE * 1000000μs, this, NULL, "ClearFragmentedBundles");
+  //    │   │                                            ↓                            ↓                           ↓
+  //    │   │                                         {@IIF.@DP}                     {10}                    {@IIF.@PR.@OR}
+  //    │   ╰╴statsUpdateTimer_ = dispatcher.addTimer(1000000μs, this, 0, "PacketReceiverStatsUpdate");
+  //    │                             ↓                            ↓
+  //    │                          {@IIF.@DP}                  {@IIF.@PR}
+  //    ├╴recreateListeningSocket(listeningPort, listeningInterface);
+  //    │ │                            ↓                 ↓
+  //    │ │                           {0}          {"bwmachined"}
+  //    │ ├╴udpSocket_.socket(SOCK_DGRAM);
+  //    │ │     ↓
+  //    │ │ {@IIF.@US}
+  //    │ ├╴pDispatcher_.registerFileDescriptor(fd: udpSocket_.fileno(), handler: pPacketReceiver_, name: "PacketReceiver");
+  //    │ │ │    ↓                                     ↓                                 ↓
+  //    │ │ │ {@IIF.@DP}                           {@IIF.@US}                        {@IIF.@PR}
+  //    │ │ ╰╴pPoller_.registerForRead({fd}, {handler}, {name})
+  //    │ │   │   ↓
+  //    │ │   │ {@IIF.@DP.@PO}
+  //    │ │   ├╴epoll_ctl(epfd_, op, {fd}, &ev)
+  //    │ │   │             ↓
+  //    │ │   │       {@IIF.@DP.@PO.@EF}
+  //    │ │   ╰╴fdReadHandlers_[{fd}] = InputHandlerEntry({handler}, {name});
+  //    │ │           ↓
+  //    │ │   {@IIF.@DP.@PO.@RH}
+  //    │ ╰╴udpSocket_.bind(listeningPort, ifaddr)
+  //    │       ↓                 ↓           ↓
+  //    │   {@IIF.@US}           {0}   {192.168.31.250}
+  //    ├╴this->attach(*pMainDispatcher);
+  //    │ │  ↓                ↓
+  //    │ │{@IIF}          {@MDP}
+  //    │ ├╴pMainDispatcher.attach(pDispatcher_);
+  //    │ │ │    ↓                     ↓
+  //    │ │ │ {@@MDP}              {@IIF.@DP}
+  //    │ │ ├╴childDispatcher.attachTo(*this);
+  //    │ │ │ │     ↓                    ↓
+  //    │ │ │ │  {@IIF.@DP}           {@@MDP}
+  //    │ │ │ ├╴pCouplingToParent_ = new DispatcherCoupling(parentDispatcher, *this);
+  //    │ │ │ │ │        ↓                                        ↓              ↓
+  //    │ │ │ │ │     {@IIF.@DP.@CP}                           {@MDP}        {@IIF.@DP}
+  //    │ │ │ │ ╰╴pFrequentTasks_->add(pTask);
+  //    │ │ │ │         ↓                ↓
+  //    │ │ │ │     {@MDP.@FT}      {@IIF.@DP.@CP}{"DispatcherCoupling"}
+  //    │ │ │ ├╴parentDispatcher.registerFileDescriptor(fd: fd, handler: pPoller_, name: "EventDispatcher");
+  //    │ │ │ │ │    ↓                                      ↓               ↓
+  //    │ │ │ │ │ {@MDP}                            {@IIF.@DP.@PO.@EF} {@IIF.@DP.@PO}
+  //    │ │ │ │ ╰╴pPoller_.registerForRead({fd}, {handler}, {name})
+  //    │ │ │ │   │   ↓
+  //    │ │ │ │   │ {@MDP.@PO}
+  //    │ │ │ │   ├╴epoll_ctl(epfd_, op, {fd}, &ev)
+  //    │ │ │ │   │             ↓
+  //    │ │ │ │   │       {@MDP.@PO.@EF}
+  //    │ │ │ │   ╰╴fdReadHandlers_[{fd}] = InputHandlerEntry({handler}, {name});
+  //    │ │ │ │           ↓
+  //    │ │ │ │     {@MDP.@PO.@RH}
+  //    │ │ │ ╰╴parentDispatcher.registerWriteFileDescriptor(fd: fd, handler: pPoller_, name: "EventDispatcher");
+  //    │ │ │   │    ↓                                            ↓               ↓
+  //    │ │ │   │ {@MDP}                                  {@IIF.@DP.@PO.@EF} {@IIF.@DP.@PO}
+  //    │ │ │   ╰╴pPoller_.registerForWrite({fd}, {handler}, {name})
+  //    │ │ │     │   ↓
+  //    │ │ │     │ {@MDP.@PO}
+  //    │ │ │     ├╴epoll_ctl(epfd_, op, {fd}, &ev)
+  //    │ │ │     │             ↓
+  //    │ │ │     │       {@MDP.@PO.@EF}
+  //    │ │ │     ╰╴fdWriteHandlers_[{fd}] = InputHandlerEntry({handler}, {name});
+  //    │ │ │             ↓
+  //    │ │ │       {@MDP.@PO.@WH}
+  //    │ │ ╰╴childDispatchers_.push_back(&childDispatcher);
+  //    │ │         ↓                            ↓
+  //    │ │     {@MDP.@CD}                    {@IIF.@DP}
+  //    │ ├╴pFrequentTasks_->add(pTask);
+  //    │ │      ↓                 ↓
+  //    │ │  {@MDP.@FT}      {@IIF.@DC}{"DelayedChannels"}
+  //    │ ╰╴dispatcher.addTimer(1000000μs, this, NULL, "SendingStats");
+  //    │        ↓                           ↓
+  //    │     {@MDP}                     {@IIF.@SS}
+  //    ╰╴pInterfaceTable_.serve(InterfaceElement::REPLY, pRequestManager_);
+  //            ↓                                                ↓
+  //        {@IIF.@IT}                                      {@IIF.@RM}
+  Mercury::NetworkInterface interface( &dispatcher,
+      Mercury::NETWORK_INTERFACE_INTERNAL, 0,
+      internalInterfaceName.c_str() );
 
-	BW_MESSAGE_FORWARDER3( SERVER_APP::appName(), SERVER_APP::configPath(), 
-		/*ENABLED=*/shouldLog, dispatcher, interface );
+  // 创建单例类；
+  // signalProcessor 追加至 pFrequentTasks_ 以便在每一次 tick 中处理来到的信号；
+  //
+  // pFrequentTasks_->add(pTask);
+  //      ↓                 ↓
+  //  {@MDP.@FT}  {@signalProcessor}{"SignalProcessor"}
+  SignalProcessor signalProcessor( dispatcher );
 
-	START_MSG( SERVER_APP::appName() );
+	BW_MESSAGE_FORWARDER3( SERVER_APP::appName(), SERVER_APP::configPath(),
+    /*ENABLED=*/shouldLog, dispatcher, interface );
 
-	if (internalInterfaceName != Mercury::NetworkInterface::USE_BWMACHINED)
-	{
-		CONFIG_WARNING_MSG( "internalInterface set to '%s' in bw.xml. "
-				"This option is deprecated. It is recommended to not set this "
-				"value. The default behaviour is to use the same interface as "
-				"bwmachined. This is controlled by the broadcast route.\n",
-			internalInterfaceName.c_str() );
-	}
+  START_MSG( SERVER_APP::appName() );
 
-	int result = doBWMainT< SERVER_APP >( dispatcher, interface, argc, argv );
+  if (internalInterfaceName != Mercury::NetworkInterface::USE_BWMACHINED)
+  {
+    CONFIG_WARNING_MSG( "internalInterface set to '%s' in bw.xml. "
+        "This option is deprecated. It is recommended to not set this "
+        "value. The default behaviour is to use the same interface as "
+        "bwmachined. This is controlled by the broadcast route.\n",
+    	internalInterfaceName.c_str() );
+  }
 
-	INFO_MSG( "%s has shut down.\n", SERVER_APP::appName() );
+  int result = doBWMainT< SERVER_APP >( dispatcher, interface, argc, argv );
+
+  INFO_MSG( "%s has shut down.\n", SERVER_APP::appName() );
 
 	return result;
 }

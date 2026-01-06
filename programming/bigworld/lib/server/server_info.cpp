@@ -156,7 +156,7 @@ void ServerInfo::fetchLinuxCpuInfo()
 
 /**
  * Parse /proc/meminfo and fill in our memInfo_, memTotal_ and memUsed_
- * 
+ *
  */
 void ServerInfo::fetchLinuxMemInfo()
 {

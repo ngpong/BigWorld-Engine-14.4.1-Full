@@ -49,7 +49,7 @@ void ReviverSubject::init( Mercury::NetworkInterface * pInterface,
 	bw_snprintf( buf, sizeof(buf), "reviver/%s/subjectTimeout", componentName );
 
 	msTimeout_ = int( BWConfig::get( buf,
-				BWConfig::get( "reviver/subjectTimeout", 
+				BWConfig::get( "reviver/subjectTimeout",
 					REVIVER_DEFAULT_SUBJECT_TIMEOUT ) ) * 1000 );
 	INFO_MSG( "ReviverSubject::init: msTimeout_ = %d\n", msTimeout_ );
 

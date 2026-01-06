@@ -12,6 +12,9 @@ class Constants
 {
 public:
 
+  // game/res/bigworld/?
+  // game/res/fantasydemo/?
+
 	// common constants
 
 	inline static const char*

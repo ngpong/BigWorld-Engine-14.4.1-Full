@@ -44,7 +44,7 @@ class TCPServer;
  *	Subclasses should use the SERVER_APP_HEADER macro to supply the process
  *	name and configuration path root.
  *
- *	e.g. 
+ *	e.g.
  *	class MyServerApp : public ServerApp
  *	{
  *	public:
@@ -149,10 +149,10 @@ protected:
 	void addWatchers( Watcher & watcher );
 
 	typedef BW::vector< int > Ports;
-	static bool bindToPrescribedPort( Mercury::NetworkInterface & networkInterface, 
+	static bool bindToPrescribedPort( Mercury::NetworkInterface & networkInterface,
 		Mercury::TCPServer & server, const BW::string & externalInterfaceAddress,
 		const Ports & externalPorts );
-	static bool bindToRandomPort( Mercury::NetworkInterface & networkInterface, 
+	static bool bindToRandomPort( Mercury::NetworkInterface & networkInterface,
 		Mercury::TCPServer & server, const BW::string & externalInterfaceAddress );
 
 	virtual void onTickPeriod( double tickPeriod );
@@ -162,13 +162,13 @@ protected:
 	 * immediately before the current server time is incremented.
 	 */
 	virtual void onEndOfTick() {};
-	
+
 	/*
 	 * This method gives subclasses a chance to act at the beginning of a tick
 	 * immediately after the current server time is incremented.
 	 */
 	virtual void onStartOfTick() {};
-	
+
 	/*
 	 * This method gives subclassses a chance to act at the end of ServerApp's
 	 * tick processing, immediately before control returns to the caller of

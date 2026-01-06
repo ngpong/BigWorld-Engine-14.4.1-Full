@@ -939,7 +939,7 @@ class MachinePlatformMessage : public MachineGuardMessage
 {
 public:
 	// TODO: consider more information: type, distribution, version
-	BW::string	platformInfo_;	//!< Machine Platform Information 
+	BW::string	platformInfo_;	//!< Machine Platform Information
 
 	MachinePlatformMessage();
 	virtual ~MachinePlatformMessage();

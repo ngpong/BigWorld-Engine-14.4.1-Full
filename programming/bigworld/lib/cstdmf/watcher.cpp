@@ -69,7 +69,7 @@ Watcher & Watcher::rootWatcherInternal()
 	return *g_pRootWatcher;
 }
 
-void Watcher::finiInternal() 
+void Watcher::finiInternal()
 {
 	if (g_pRootWatcher)
 	{
@@ -244,11 +244,11 @@ bool DirectoryWatcher::setFromStream( void * base, const char * path,
  *	Override from Watcher
  */
 bool DirectoryWatcher::visitChildren( const void * base, const char * path,
-	WatcherPathRequest & pathRequest ) 
+	WatcherPathRequest & pathRequest )
 {
 	bool handled = false;
 
-	// Inform the path request of the number of children 
+	// Inform the path request of the number of children
 	MF_ASSERT( container_.size() <= INT_MAX );
 	pathRequest.addWatcherCount( ( int )container_.size() );
 
@@ -1071,21 +1071,21 @@ SafeWatcher::SafeWatcher( WatcherPtr pWatcher, SimpleMutex & mutex ) :
 bool SafeWatcher::getAsString( const void * base, const char * path,
 									  BW::string & result, BW::string & desc,
 									  Watcher::Mode & mode ) const
-{ 
+{
 	MutexHolder mh( *this );
 	return pWatcher_->getAsString( base, path, result, desc, mode );
 }
 
 bool SafeWatcher::setFromString( void * base, const char * path,
 										const char * valueStr )
-{ 
+{
 	MutexHolder mh( *this );
 	return pWatcher_->setFromString( base, path, valueStr );
 }
 
 bool SafeWatcher::getAsStream( const void * base, const char * path,
 									  WatcherPathRequestV2 & pathRequest ) const
-{ 
+{
 	MutexHolder mh( *this );
 	return pWatcher_->getAsStream( base, path, pathRequest );
 }
@@ -1098,7 +1098,7 @@ bool SafeWatcher::setFromStream( void * base, const char * path,
 }
 
 bool SafeWatcher::visitChildren( const void * base, const char * path,
-										WatcherPathRequest & pathRequest ) 
+										WatcherPathRequest & pathRequest )
 {
 	MutexHolder mh( *this );
 	return pWatcher_->visitChildren( base, path, pathRequest );
@@ -1107,9 +1107,9 @@ bool SafeWatcher::visitChildren( const void * base, const char * path,
 
 bool SafeWatcher::addChild( const char * path, WatcherPtr pChild,
 								   void * withBase )
-{ 
+{
 	MutexHolder mh( *this );
-	return pWatcher_->addChild( path, pChild, withBase ); 
+	return pWatcher_->addChild( path, pChild, withBase );
 }
 
 
@@ -1139,7 +1139,7 @@ void SafeWatcher::give() const
 // Section: SafeWatcher
 // -----------------------------------------------------------------------------
 
-ReadWriteLockWatcher::ReadWriteLockWatcher( 
+ReadWriteLockWatcher::ReadWriteLockWatcher(
 		WatcherPtr pWatcher, ReadWriteLock & readWriteLock ) :
 	Watcher( pWatcher->getComment().c_str() ),
 	pWatcher_( pWatcher ),
@@ -1150,21 +1150,21 @@ ReadWriteLockWatcher::ReadWriteLockWatcher(
 bool ReadWriteLockWatcher::getAsString( const void * base, const char * path,
 							  BW::string & result, BW::string & desc,
 							  Watcher::Mode & mode ) const
-{ 
+{
 	ReadWriteLock::ReadGuard rg( readWriteLock_ );
 	return pWatcher_->getAsString( base, path, result, desc, mode );
 }
 
 bool ReadWriteLockWatcher::setFromString( void * base, const char * path,
 								const char * valueStr )
-{ 
+{
 	ReadWriteLock::WriteGuard wg( readWriteLock_ );
 	return pWatcher_->setFromString( base, path, valueStr );
 }
 
 bool ReadWriteLockWatcher::getAsStream( const void * base, const char * path,
 							  WatcherPathRequestV2 & pathRequest ) const
-{ 
+{
 	ReadWriteLock::ReadGuard rg( readWriteLock_ );
 	return pWatcher_->getAsStream( base, path, pathRequest );
 }
@@ -1177,7 +1177,7 @@ bool ReadWriteLockWatcher::setFromStream( void * base, const char * path,
 }
 
 bool ReadWriteLockWatcher::visitChildren( const void * base, const char * path,
-								WatcherPathRequest & pathRequest ) 
+								WatcherPathRequest & pathRequest )
 {
 	ReadWriteLock::ReadGuard rg( readWriteLock_ );
 	return pWatcher_->visitChildren( base, path, pathRequest );
@@ -1186,9 +1186,9 @@ bool ReadWriteLockWatcher::visitChildren( const void * base, const char * path,
 
 bool ReadWriteLockWatcher::addChild( const char * path, WatcherPtr pChild,
 						   void * withBase )
-{ 
+{
 	ReadWriteLock::WriteGuard wg( readWriteLock_ );
-	return pWatcher_->addChild( path, pChild, withBase ); 
+	return pWatcher_->addChild( path, pChild, withBase );
 }
 
 
@@ -1204,29 +1204,29 @@ DereferenceWatcher::DereferenceWatcher( WatcherPtr watcher, void * withBase ) :
 bool DereferenceWatcher::getAsString( const void * base, const char * path,
 									  BW::string & result, BW::string & desc,
 									  Watcher::Mode & mode ) const
-{ 
+{
 	uintptr baseAddress = base ? dereference( base ) : 0;
 	return  baseAddress == 0 ? false :
-			watcher_->getAsString( (void*)(sb_ + baseAddress), path, 
-							   result, desc, mode ); 
+			watcher_->getAsString( (void*)(sb_ + baseAddress), path,
+							   result, desc, mode );
 }
 
 bool DereferenceWatcher::setFromString( void * base, const char * path,
 										const char * valueStr )
-{ 
+{
 	uintptr baseAddress = base ? dereference( base ) : 0;
 	return  baseAddress == 0 ? false :
-		watcher_->setFromString( (void*)(sb_ + baseAddress), path, 
-								 valueStr ); 
+		watcher_->setFromString( (void*)(sb_ + baseAddress), path,
+								 valueStr );
 }
 
 bool DereferenceWatcher::getAsStream( const void * base, const char * path,
 									  WatcherPathRequestV2 & pathRequest ) const
-{ 
+{
 	uintptr baseAddress = base ? dereference( base ) : 0;
 	return  baseAddress == 0 ? false :
-		watcher_->getAsStream( (void*)(sb_ + baseAddress), path, 
-							   pathRequest ); 
+		watcher_->getAsStream( (void*)(sb_ + baseAddress), path,
+							   pathRequest );
 }
 
 bool DereferenceWatcher::setFromStream( void * base, const char * path,
@@ -1234,24 +1234,24 @@ bool DereferenceWatcher::setFromStream( void * base, const char * path,
 {
 	uintptr baseAddress = base ? dereference( base ) : 0;
 	return  baseAddress == 0 ? false :
-		watcher_->setFromStream( (void*)(sb_ + baseAddress), path, 
-								 pathRequest ); 
+		watcher_->setFromStream( (void*)(sb_ + baseAddress), path,
+								 pathRequest );
 }
 
 bool DereferenceWatcher::visitChildren( const void * base, const char * path,
-										WatcherPathRequest & pathRequest ) 
+										WatcherPathRequest & pathRequest )
 {
 	uintptr baseAddress = base ? dereference( base ) : 0;
 	return  baseAddress == 0 ? false :
-		watcher_->visitChildren( (void*)(sb_ + baseAddress), path, 
-								 pathRequest ); 
+		watcher_->visitChildren( (void*)(sb_ + baseAddress), path,
+								 pathRequest );
 }
 
 
 bool DereferenceWatcher::addChild( const char * path, WatcherPtr pChild,
 								   void * withBase )
-{ 
-	return watcher_->addChild( path, pChild, withBase ); 
+{
+	return watcher_->addChild( path, pChild, withBase );
 }
 
 

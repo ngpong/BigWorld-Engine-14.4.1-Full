@@ -3,7 +3,7 @@
 
 #if defined( __linux__ ) && !defined( EMSCRIPTEN )
 #include <linux/sockios.h>
-#endif 
+#endif
 
 #include <netinet/tcp.h>
 #endif
@@ -501,7 +501,7 @@ INLINE int Endpoint::recvfrom( void * gramData, int gramSize,
 	Mercury::Address & addr ) const
 {
 	BW_GUARD;
-	return this->recvfrom( gramData, gramSize, 
+	return this->recvfrom( gramData, gramSize,
 		reinterpret_cast< u_int16_t * >(&addr.port),
 		reinterpret_cast< u_int32_t * >(&addr.ip) );
 }

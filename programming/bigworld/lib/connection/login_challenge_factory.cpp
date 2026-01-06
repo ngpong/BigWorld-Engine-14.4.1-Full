@@ -40,7 +40,7 @@ public:
 	{
 		duration_ = duration;
 	}
-	
+
 
 	/* Override from LoginChallenge. */
 	bool writeChallengeToStream( BinaryOStream & data ) /* override */
@@ -141,8 +141,8 @@ public:
 		WatcherPtr pWatcher = new DirectoryWatcher();
 		DelayLoginChallengeFactory * pNull = NULL;
 
-		pWatcher->addChild( "duration", 
-			makeNonRefWatcher( *pNull, 
+		pWatcher->addChild( "duration",
+			makeNonRefWatcher( *pNull,
 				&DelayLoginChallengeFactory::duration,
 				&DelayLoginChallengeFactory::duration ) );
 
@@ -206,7 +206,7 @@ public:
 	{
 		return false;
 	}
-	
+
 };
 
 
@@ -323,7 +323,7 @@ LoginChallengeFactoryPtr LoginChallengeFactories::getFactory(
  *
  *	@param name 	The name of the challenge type.
  */
-LoginChallengePtr LoginChallengeFactories::createChallenge( 
+LoginChallengePtr LoginChallengeFactories::createChallenge(
 		const BW::string & name )
 {
 	FactoryMap::const_iterator iter = map_.find( name );
@@ -359,7 +359,7 @@ bool LoginChallengeFactories::configureFactories(
 		++iter;
 
 		LoginChallengeConfigPtr pConfig = config.getChild( current->first );
-		
+
 		if (pConfig.hasObject() && !pFactory->configure( *pConfig ))
 		{
 			ERROR_MSG( "LoginChallengeFactories::configureFactories: "

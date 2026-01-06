@@ -30,7 +30,7 @@ class RetireAppCommand : public NoArgCallableWatcher
 {
 public:
 	RetireAppCommand( ServerApp & app ) :
-		// TODO: BWT-29273 Enable DBApp watcher forwarding 
+		// TODO: BWT-29273 Enable DBApp watcher forwarding
 		NoArgCallableWatcher( strcmp( app.getAppName(), "DBApp" ) == 0 ?
 					CallableWatcher::LOCAL_ONLY : CallableWatcher::LEAST_LOADED,
 				"Retire the least loaded app." ),
@@ -89,7 +89,7 @@ ServerApp::ServerApp( Mercury::EventDispatcher & mainDispatcher,
 {
 #if ENABLE_PROFILER
 	g_profiler.init( 12*1024*1024, ServerAppConfig::profilerMaxThreads() );
-	
+
 	BW::string profileJsonDumpDir = \
 						ServerAppConfig::profilerJsonDumpDirectory();
 	if (!profileJsonDumpDir.empty())
@@ -122,11 +122,11 @@ ServerApp::~ServerApp()
 
 /**
  *	Factory method for ServerApp subclasses to create their own signal
- *	handler instances. 
+ *	handler instances.
  *
  *	Subclasses should call enableSignalHandler() for each signal that this
- *	handler should handle. 
- *	
+ *	handler should handle.
+ *
  *	The instance created is managed by the ServerApp instance.
  *
  *	The default ServerApp instance calls through to ServerApp::onSignalled().
@@ -191,7 +191,7 @@ void ServerApp::callUpdatables()
 
 /**
  *	Initialisation function.
- *	
+ *
  *	This needs to be called from subclasses' overrides.
  */
 bool ServerApp::init( int argc, char * argv[] )
@@ -212,12 +212,15 @@ bool ServerApp::init( int argc, char * argv[] )
 			watcherValueToString( runFromMachined ).c_str() );
 
 #if ENABLE_PROFILER
+  // 内省情况下不操作
 	if (ServerAppConfig::hasHitchDetection())
 	{
 		g_profiler.setProfileMode( Profiler::SORT_BY_TIME, false );
 	}
 #endif
 
+  // 添加信号处理器 ServerAppSignalHandler;
+  // ServerAppSignalHandler 派生自 SignalHandler，任何信号会在每次 tick 的时候被检查是否需要触发；
 	pSignalHandler_.reset( this->createSignalHandler() );
 
 	// Handle signals
@@ -485,12 +488,12 @@ void ServerApp::enableSignalHandler( int sigNum, bool enable )
 
 	if (enable)
 	{
-		SignalProcessor::instance().addSignalHandler( sigNum, 
+		SignalProcessor::instance().addSignalHandler( sigNum,
 			pSignalHandler_.get() );
 	}
 	else
 	{
-		SignalProcessor::instance().clearSignalHandler( sigNum, 
+		SignalProcessor::instance().clearSignalHandler( sigNum,
 			pSignalHandler_.get() );
 	}
 }
@@ -559,7 +562,7 @@ void ServerApp::onSignalled( int sigNum )
  *								binding.
  *	@param ports				The list of prescibed ports to attempt to bind to.
  */
-bool ServerApp::bindToPrescribedPort( Mercury::NetworkInterface & networkInterface, 
+bool ServerApp::bindToPrescribedPort( Mercury::NetworkInterface & networkInterface,
 		Mercury::TCPServer & tcpServer,
 		const BW::string & externalInterfaceAddress, const Ports & ports )
 {
@@ -599,7 +602,7 @@ bool ServerApp::bindToPrescribedPort( Mercury::NetworkInterface & networkInterfa
 				"Attempting to re-bind external interface to %s:%hu\n",
 			externalInterfaceAddress.c_str(), port );
 
-		if (networkInterface.recreateListeningSocket( htons( port ), 
+		if (networkInterface.recreateListeningSocket( htons( port ),
 				externalInterfaceAddress.c_str() ))
 		{
 			// OK, we have a UDP port, try binding the TCP port to the same
@@ -634,7 +637,7 @@ bool ServerApp::bindToPrescribedPort( Mercury::NetworkInterface & networkInterfa
  *								binding.
  *
  */
-bool ServerApp::bindToRandomPort( Mercury::NetworkInterface & networkInterface, 
+bool ServerApp::bindToRandomPort( Mercury::NetworkInterface & networkInterface,
 		Mercury::TCPServer & tcpServer,
 		const BW::string & externalInterfaceAddress )
 {
@@ -645,7 +648,7 @@ bool ServerApp::bindToRandomPort( Mercury::NetworkInterface & networkInterface,
 
 	while (numRetriesLeft)
 	{
-		if (networkInterface.recreateListeningSocket( 0, 
+		if (networkInterface.recreateListeningSocket( 0,
 				externalInterfaceAddress.c_str() ))
 		{
 			// OK, we have a UDP port, try binding the TCP port to the same
@@ -754,7 +757,7 @@ void ServerApp::raiseFileDescriptorLimit( long limit )
 
 /**
  *	This method returns the process file descriptor limit.
- *	
+ *
  *	@return The process file descriptor limit.
  */
 int ServerApp::fileDescriptorLimit() const
@@ -775,7 +778,7 @@ int ServerApp::fileDescriptorLimit() const
 
 /**
  *	This method returns the number of file descriptors opened by this process.
- *	
+ *
  *	@return The number of file descriptors opened by this process.
  */
 int ServerApp::numFileDescriptorsOpen() const

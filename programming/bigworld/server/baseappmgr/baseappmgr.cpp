@@ -326,7 +326,7 @@ BaseAppMgr::~BaseAppMgr()
 		if (cellAppMgr_.channel().isEstablished())
 		{
 			Mercury::Bundle	& bundle = cellAppMgr_.bundle();
-			CellAppMgrInterface::shutDownArgs cellAppmgrShutDownArgs = 
+			CellAppMgrInterface::shutDownArgs cellAppmgrShutDownArgs =
 				{ false };
 			bundle << cellAppmgrShutDownArgs;
 			cellAppMgr_.send();
@@ -388,7 +388,7 @@ bool BaseAppMgr::init( int argc, char * argv[] )
 
 	BaseAppMgrInterface::registerWithInterface( interface_ );
 
-	Mercury::Reason reason = 
+	Mercury::Reason reason =
 		BaseAppMgrInterface::registerWithMachined( interface_, 0 );
 
 	if (reason != Mercury::REASON_SUCCESS)
@@ -517,15 +517,15 @@ void BaseAppMgr::onBaseAppRetire( BaseApp & baseApp )
 
 /**
  *	This method updates the best BaseApp for creating bases through
- *	createBaseAnywhere calls. 
+ *	createBaseAnywhere calls.
  */
 void BaseAppSubSet::updateBestBaseApp()
 {
 	BaseApp * pBest = this->findLeastLoadedApp();
 
-	// TODO:BAR Should consider the possibility that the last app is 
+	// TODO:BAR Should consider the possibility that the last app is
 	// now being retired, which will result in pBest == NULL. Maybe
-	// retiring the last BaseApp should be a special case where we 
+	// retiring the last BaseApp should be a special case where we
 	// trigger a controlled shutdown of the whole server.
 
 	if ((pBest != NULL) &&
@@ -720,7 +720,7 @@ void BaseAppMgr::addWatchers()
 	MF_WATCH( "baseAppLoad/min", baseApps_, &BaseAppSubSet::minAppLoad );
 	MF_WATCH( "baseAppLoad/average", baseApps_, &BaseAppSubSet::avgAppLoad );
 	MF_WATCH( "baseAppLoad/max", baseApps_, &BaseAppSubSet::maxAppLoad );
-	
+
 	MF_WATCH( "serviceAppLoad/min", serviceApps_, &ServiceAppSubSet::minAppLoad );
 	MF_WATCH( "serviceAppLoad/average", serviceApps_, &ServiceAppSubSet::avgAppLoad );
 	MF_WATCH( "serviceAppLoad/max", serviceApps_, &ServiceAppSubSet::maxAppLoad );
@@ -999,15 +999,15 @@ void BaseAppMgr::add( const Mercury::Address & srcAddr,
 
 	// If we're not allowing BaseApps to connect at the moment, just send back a
 	// zero-length reply.
-	if (!cellAppMgr_.channel().isEstablished() || !hasInitData_ || 
+	if (!cellAppMgr_.channel().isEstablished() || !hasInitData_ ||
 			dbApps_.empty())
 	{
 		PROC_IP_INFO_MSG( "BaseAppMgr::add: "
 				"Not allowing BaseApp at %s to register yet (%s)\n",
 			srcAddr.c_str(),
-			!cellAppMgr_.channel().isEstablished() ? 
+			!cellAppMgr_.channel().isEstablished() ?
 				"CellAppMgr has not started yet" :
-				!hasInitData_ ? "No init data from DBApp Alpha" : 
+				!hasInitData_ ? "No init data from DBApp Alpha" :
 					"DBApp hash has not been initialised (or is empty)" );
 
 		Mercury::ChannelSender sender( BaseAppMgr::getChannel( srcAddr ) );
@@ -1024,7 +1024,7 @@ void BaseAppMgr::add( const Mercury::Address & srcAddr,
 
 	const BaseAppPtr pBaseApp( new BaseApp( *this, args.addrForCells,
 		args.addrForClients, id, args.isServiceApp ) );
-	
+
 	pendingApps_.insert( std::make_pair( pBaseApp->addr(), pBaseApp ) );
 
 	// Stream on the reply
@@ -1222,7 +1222,7 @@ void ManagedAppSubSet::recoverBaseApp( const Mercury::Address & /*srcAddr*/,
 		return;
 	}
 
-	BaseAppPtr pBaseApp( new BaseApp( baseAppMgr, addrForCells, addrForClients, 
+	BaseAppPtr pBaseApp( new BaseApp( baseAppMgr, addrForCells, addrForClients,
 		id, isServiceApp ) );
 	this->addApp( pBaseApp );
 
@@ -1345,7 +1345,7 @@ void BaseAppMgr::del( const Mercury::Address & addr,
 
 
 /**
- *	This method handles the update from a BaseApp/ServiceApp after it 
+ *	This method handles the update from a BaseApp/ServiceApp after it
  *	finishes initialization, which means it's ready to handle messages.
  */
 void BaseAppMgr::finishedInit( const Mercury::Address & addr,
@@ -1356,10 +1356,10 @@ void BaseAppMgr::finishedInit( const Mercury::Address & addr,
 	BaseApps::iterator it = pendingApps_.find( addr );
 	if (it != pendingApps_.end())
 	{
-		/** 
-		 * The 'putServiceFragmentsInto' has to be here, after init is 
-		 * done, otherwise any service fragment that registers between 
-		 * 'add' and 'finishedInit' will be ignored and not able to be 
+		/**
+		 * The 'putServiceFragmentsInto' has to be here, after init is
+		 * done, otherwise any service fragment that registers between
+		 * 'add' and 'finishedInit' will be ignored and not able to be
 		 * populated to this BaseApp.
 		 */
 		serviceApps_.putServiceFragmentsInto( it->second->bundle() );
@@ -1408,7 +1408,7 @@ void BaseAppMgr::synchronize( BaseAppPtr baseApp )
 		bundle << SharedDataType( SHARED_DATA_TYPE_BASE_APP ) <<
 			iSharedData->first << iSharedData->second;
 	}
-	
+
 	for (SharedData::const_iterator iSharedData = sharedGlobalData_.begin();
 			iSharedData != sharedGlobalData_.end(); ++iSharedData)
 	{
@@ -1756,7 +1756,7 @@ bool ServiceAppSubSet::onBaseAppDeath( BaseApp & baseApp )
 
 	if (!lostServices.empty())
 	{
-		ServicesMap::Names::const_iterator iLostService = 
+		ServicesMap::Names::const_iterator iLostService =
 			lostServices.begin();
 
 		while (iLostService != lostServices.end())
@@ -1878,7 +1878,7 @@ void BaseAppMgr::informBaseAppsOfShutDown(
 void BaseAppMgr::controlledShutDown(
 		const BaseAppMgrInterface::controlledShutDownArgs & args )
 {
-	INFO_MSG( "BaseAppMgr::controlledShutDown: stage = %s\n", 
+	INFO_MSG( "BaseAppMgr::controlledShutDown: stage = %s\n",
 		ServerApp::shutDownStageToString( args.stage ) );
 
 	switch (args.stage)
@@ -2004,7 +2004,7 @@ void BaseAppMgr::controlledShutDownServer()
 
 		INFO_MSG( "BaseAppMgr::controlledShutDownServer: "
 				"Triggering server shutdown via the Alpha DBApp%02d (%s)\n",
-			dbApps_.alpha().id(), 
+			dbApps_.alpha().id(),
 			dbAppAlpha_.addr().c_str() );
 		return;
 	}
@@ -2306,13 +2306,13 @@ void BaseAppMgr::informOfArchiveComplete( const Mercury::Address & addr,
 
 /**
  *	This method handles a request to send back the backup hash chain to the
- *	requesting address. 
+ *	requesting address.
  */
 void BaseAppMgr::requestBackupHashChain( const Mercury::Address & addr,
 			const Mercury::UnpackedMessageHeader & header,
 			BinaryIStream & data )
 {
-	Mercury::UDPBundle bundle; 
+	Mercury::UDPBundle bundle;
 
 	// TODO: Make the requesting app retry until it gets a response, as it is
 	// usually the Web Integration module making the requests, and it can't do
@@ -2358,7 +2358,7 @@ void BaseAppMgr::updateDBAppHash( const Mercury::Address & addr,
 	{
 		DEBUG_MSG( "BaseAppMgr::updateDBAppHash: Got new DBApp Alpha %s\n",
 			dbAppAlphaAddress.c_str() );
-			
+
 		dbAppAlpha_.addr( dbAppAlphaAddress );
 	}
 
@@ -2415,7 +2415,7 @@ void BaseAppMgr::startup( const Mercury::Address & addr,
 			this->startupBaseApp( *it->second, shouldSendBootstrap,
 				didAutoLoadEntitiesFromDB );
 		}
-		
+
 		for (BaseApps::const_iterator it = pendingApps_.begin();
 				it != pendingApps_.end(); ++it)
 		{
@@ -2428,12 +2428,12 @@ void BaseAppMgr::startup( const Mercury::Address & addr,
 
 /**
  *	This method sends the startup message to a BaseApp.
- * 
+ *
  *	@param baseApp						The BaseApp to send the message to.
  *	@param shouldSendBootstrap			Whether this BaseApp is the bootstrap.
  *	@param didAutoLoadEntitiesFromDB	Starting from auto-loaded state.
  */
-void BaseAppMgr::startupBaseApp( BaseApp & baseApp, bool & shouldSendBootstrap, 
+void BaseAppMgr::startupBaseApp( BaseApp & baseApp, bool & shouldSendBootstrap,
 	bool didAutoLoadEntitiesFromDB )
 {
 	Mercury::Bundle & bundle = baseApp.bundle();
@@ -2787,7 +2787,7 @@ void ServiceAppSubSet::addServiceFragmentFromStream( const Mercury::Address & sr
 
 		args.rewind();
 		Mercury::Bundle & bundle = cellAppMgr_.bundle();
-		bundle.startMessage( 
+		bundle.startMessage(
 			CellAppMgrInterface::addServiceFragment );
 		bundle.transfer( args, args.remainingLength() );
 		cellAppMgr_.send();
@@ -2810,7 +2810,7 @@ bool ServiceAppSubSet::deregisterServiceFragment(
 			srcAddr.c_str(), serviceName.c_str() );
 
 	bool didLoseService = false;
-	int numDeleted = services_.removeFragment( serviceName, srcAddr, 
+	int numDeleted = services_.removeFragment( serviceName, srcAddr,
 		&didLoseService );
 
 	if (numDeleted != 1)
@@ -2827,7 +2827,7 @@ bool ServiceAppSubSet::deregisterServiceFragment(
 
 	payload.rewind();
 	Mercury::Bundle & bundle = cellAppMgr_.bundle();
-	bundle.startMessage( 
+	bundle.startMessage(
 		CellAppMgrInterface::delServiceFragment );
 	bundle.transfer( payload, payload.remainingLength() );
 	cellAppMgr_.send();

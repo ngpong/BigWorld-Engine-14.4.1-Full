@@ -103,7 +103,7 @@ BW_END_NAMESPACE
 
 #endif
 
- 
+
 DECLARE_DEBUG_COMPONENT2( "Network", 0 )
 
 
@@ -113,8 +113,8 @@ BW_BEGIN_NAMESPACE
 /**
  *	This method enables the per-socket error queue for this socket.
  *
- *	@param shouldEnable 	If true, the error queue will be enabled, otherwise 
- *							it will be disabled. 
+ *	@param shouldEnable 	If true, the error queue will be enabled, otherwise
+ *							it will be disabled.
  */
 void Endpoint::enableErrorQueue( bool shouldEnable )
 {
@@ -129,12 +129,12 @@ void Endpoint::enableErrorQueue( bool shouldEnable )
 
 
 /**
- *	This method reads the error data from the error queue. This requires that 
+ *	This method reads the error data from the error queue. This requires that
  *
  *	@param queuedErrNo 		This is filled with the error's errno.
  *	@param offenderAddress 	This is filled with the offending peer address
  *							associated with the error.
- *	@param info		 		This is filled with the ee_info 
+ *	@param info		 		This is filled with the ee_info
  * 							from sock_extended_err.
  *
  *	@return True if closedPort was set, otherwise false.
@@ -257,8 +257,8 @@ bool Endpoint::getInterfaces( InterfaceMap & interfaces,
     {
         if (!netmask.parse( netmaskStr ))
         {
-            WARNING_MSG( 
-                "Endpoint::getInterfaces: failed to parse netmask string '%s'\n", 
+            WARNING_MSG(
+                "Endpoint::getInterfaces: failed to parse netmask string '%s'\n",
                 netmaskStr );
         }
     }
@@ -701,12 +701,12 @@ void initNetwork()
 	BW_GUARD;
 	if (s_networkInitted) return;
 	s_networkInitted = true;
-	
+
 #if defined(_WIN32)
 #if defined( USE_OPENSSL )
-	if (!BWOpenSSL::CRYPTO_set_mem_functions( 
-			OpenSSLMemHooks::malloc, 
-			OpenSSLMemHooks::realloc, 
+	if (!BWOpenSSL::CRYPTO_set_mem_functions(
+			OpenSSLMemHooks::malloc,
+			OpenSSLMemHooks::realloc,
 			OpenSSLMemHooks::free))
 	{
 		DEV_CRITICAL_MSG( "Endpoint::initNetwork: "
@@ -720,9 +720,9 @@ void initNetwork()
 		void *(*currentRealloc)(void *, size_t);
 		void (*currentFree)(void *);
 
-		BWOpenSSL::CRYPTO_get_mem_functions( 
-			&currentMalloc, 
-			&currentRealloc, 
+		BWOpenSSL::CRYPTO_get_mem_functions(
+			&currentMalloc,
+			&currentRealloc,
 			&currentFree );
 
 		MF_ASSERT( currentMalloc == OpenSSLMemHooks::malloc &&
@@ -732,7 +732,7 @@ void initNetwork()
 #endif // !_RELEASE
 #endif // USE_OPENSSL
 #endif // _WIN32
-	
+
 #ifdef _WIN32
 #ifdef _XBOX
     XNetStartupParams xnsp;

@@ -43,7 +43,7 @@ bool ChannelMap::add( UDPChannel & channel )
 {
 	MF_ASSERT( channel.addr() != Address::NONE );
 
-	std::pair< Map::iterator, bool > result = 
+	std::pair< Map::iterator, bool > result =
 		map_.insert( Map::value_type( channel.addr(), &channel ) );
 
 	// Should not register a channel twice.

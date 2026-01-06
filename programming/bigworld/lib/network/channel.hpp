@@ -32,9 +32,9 @@ class NetworkInterface;
 /**
  *	This abstract class represents a Mercury Channel between two processes.
  */
-class Channel : 
+class Channel :
 #if ENABLE_WATCHERS
-	public WatcherProvider, 
+	public WatcherProvider,
 #endif // ENABLE_WATCHERS
 	public ReferenceCount
 {
@@ -57,7 +57,7 @@ public:
 	virtual const char * c_str() const = 0;
 
 	/**
-	 *	This method returns if there is any data pending to be sent on this 
+	 *	This method returns if there is any data pending to be sent on this
 	 *	channel.
 	 */
 	virtual bool hasUnsentData() const = 0;
@@ -140,7 +140,7 @@ public:
 	 */
 	NetworkInterface & networkInterface() { return *pNetworkInterface_; }
 
-	void send( Bundle * pBundle = NULL ); 
+	void send( Bundle * pBundle = NULL );
 
 	void clearBundle();
 	void bundlePrimer( BundlePrimer * pPrimer );
@@ -175,7 +175,7 @@ public:
 
 	/**
 	 *	This method returns the timestamp of the last time data was received on
-	 *	this channel. 
+	 *	this channel.
 	 *
 	 *	@return The last received time, in stamps.
 	 */
@@ -184,7 +184,7 @@ public:
 	/**
 	 *	This method returns the number of seconds since the last receive.
 	 */
-	double timeSinceLastReceived() const 
+	double timeSinceLastReceived() const
 	{
 		return (timestamp() - lastReceivedTime_) / stampsPerSecondD();
 	}
@@ -198,16 +198,16 @@ public:
 	 *	@param pListener 	The channel listener, or NULL to clear the
 	 *						listener.
 	 */
-	void pChannelListener( ChannelListener * pListener ) 
-	{ 
-		pListener_ = pListener; 
+	void pChannelListener( ChannelListener * pListener )
+	{
+		pListener_ = pListener;
 	}
 
 	/**
 	 *	This method returns the channel listener for this channel.
 	 */
 	ChannelListener * pChannelListener()
-	{ 
+	{
 		return pListener_ ;
 	}
 
@@ -217,7 +217,7 @@ public:
 	 *	@param userData 	The user data to set.
 	 */
 	void userData( void * userData ) { userData_ = userData; }
-	
+
 	/**
 	 *	Return the application user data for this channel.
 	 *
@@ -251,7 +251,7 @@ protected:
 	Channel( NetworkInterface & networkInterface, const Address & addr );
 	virtual ~Channel();
 
-	/** 
+	/**
 	 *	This method is called when the given bundle is about to be finalised.
 	 *	Subclasses can use this to manipulate the bundle before it is finalised
 	 *	for sending.
@@ -286,7 +286,7 @@ protected:
 
 	BundlePrimer * 		pBundlePrimer_;
 	MessageFilterPtr 	pMessageFilter_;
-	
+
 	NetworkInterface * 	pNetworkInterface_;
 
 	bool 				isDestroyed_;

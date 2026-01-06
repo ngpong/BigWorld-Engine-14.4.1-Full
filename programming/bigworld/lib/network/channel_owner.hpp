@@ -15,11 +15,11 @@ class ChannelOwner
 {
 public:
 	ChannelOwner( NetworkInterface & networkInterface,
-			const Address & address = Address::NONE,
-			UDPChannel::Traits traits = UDPChannel::INTERNAL ) :
-		pChannel_( traits == UDPChannel::INTERNAL ?
-			UDPChannel::get( networkInterface, address ) :
-			new UDPChannel( networkInterface, address, traits ) )
+                const Address & address = Address::NONE,
+                UDPChannel::Traits traits = UDPChannel::INTERNAL ) :
+    pChannel_( traits == UDPChannel::INTERNAL ?
+      UDPChannel::get( networkInterface, address ) :
+      new UDPChannel( networkInterface, address, traits ) )
 	{
 	}
 

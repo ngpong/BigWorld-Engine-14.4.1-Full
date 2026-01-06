@@ -52,7 +52,7 @@ public:
 
 	void setDefaultSignalHandler( int sigNum );
 
-	void addSignalHandler( int sigNum, SignalHandler * pSignalHandler, 
+	void addSignalHandler( int sigNum, SignalHandler * pSignalHandler,
 		int flags = 0 );
 
 	void clearSignalHandlers( int sigNum );
